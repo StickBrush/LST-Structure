@@ -17,7 +17,7 @@ public class KDTtester {
 		System.out.println(System.getProperty("user.dir"));
 		
 		try {
-			fillPointsFromFile();
+			fillPointsFromFile(); //added comment to tester
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
