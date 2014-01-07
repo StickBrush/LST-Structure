@@ -1,6 +1,7 @@
 package ut.mpc.kdt;
 import java.util.ArrayList;
 
+import ut.mpc.setup.Init;
 import KDTree.KDTree;
 
 public class KDTTree extends KDTree {
@@ -17,9 +18,22 @@ public class KDTTree extends KDTree {
 			points.add( (Temporal) objs[i]);
 		}
 		WindowCompute wc = new WindowCompute(lowk,uppk,points);
+		double[] corners = new double[4];
+		corners = wc.getBoundingBox();
+		double[] lowers = new double[2];
+		lowers[0] = corners[0];
+		lowers[1] = corners[2];
+		double[] uppers = new double[2];
+		uppers[0] = corners[1];
+		uppers[1] = corners[3];
+		System.out.println(lowers[0]);
+		System.out.println(lowers[1]);
+		System.out.println(uppers[0]);
+		System.out.println(uppers[1]);
+		WindowCompute wc2 = new WindowCompute(lowers,uppers,points);
 		
-		wc.printWindow();
-		//System.out.println("Window Probability is: " + wc.getWindowProbability());
+		wc2.printWindow();
+		//System.out.println("Window Probability is: " + wc2.getWindowProbability());
 	}
 	
 	public double compareWindows(double[] lowInner, double[] uppInner, double[] lowOuter, double[] uppOuter){

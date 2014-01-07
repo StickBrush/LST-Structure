@@ -2,15 +2,15 @@ package ut.mpc.setup;
 
 public class Init {
 	public static final double SPACE_WEIGHT = 100; //useful for scaling the magnitude of the computation numbers (good to stay within reasonable bounds to avoid rounding/overflow)
-	public static final double SPACE_RADIUS = .03;
+	public static final double SPACE_RADIUS = 1;
 	
 	//for some reason by increasing this slightly (around .1), the total estimate will actually increase.  Could this be from rounding errors
 	//by including low probability points?
-	public static final double SPACE_TRIM = .2 * SPACE_WEIGHT; //default to 0 for safest estimate, increase for less accurate but faster estimations
+	public static final double SPACE_TRIM = 0 * SPACE_WEIGHT; //default to 0 for safest estimate, increase for less accurate but faster estimations
 	
-	public static final boolean GRID_DEFAULT = true;
-	public static final double X_GRID_GRAN = (GRID_DEFAULT) ? SPACE_RADIUS / 10 : .01; //allow fine tuning by setting grid default to off
-	public static final double Y_GRID_GRAN = (GRID_DEFAULT) ? SPACE_RADIUS / 10 : .01; //allow fine tuning by setting grid default to off
+	public static final boolean GRID_DEFAULT = false;
+	public static final double X_GRID_GRAN = (GRID_DEFAULT) ? SPACE_RADIUS / 10 : .001; //allow fine tuning by setting grid default to off
+	public static final double Y_GRID_GRAN = (GRID_DEFAULT) ? SPACE_RADIUS / 10 : .001; //allow fine tuning by setting grid default to off
 	
 	public static final boolean NORMALIZE_PLOT = false; //generally won't see an effect of temporal decay with this set to true (will simply normalize scale)
 	

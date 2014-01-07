@@ -64,7 +64,7 @@ public class KDTtester {
 	//@pre: requires at least one point in file, otherwise seg. fault
 	//@pre: requires first entry to be most recent and last entry to be least recent
 	public static void fillPointsFromFile() throws Exception{
-		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/30_abboip.txt"));
+		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/small_abboip.txt"));
 		//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/data.txt"));
 
 		String line;

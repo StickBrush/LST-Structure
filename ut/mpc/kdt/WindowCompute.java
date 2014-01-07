@@ -68,6 +68,39 @@ public class WindowCompute {
 		this.lowBound = lowBound;
 		this.upperBound = upperBound;
 		this.points = points;
+		System.out.println(points.get(0).getXCoord());
+	}
+	
+	//will cause exception if there are no points in the window compute
+	public double[] getBoundingBox(){
+		double[] corners = new double[4];
+		corners[0] = this.points.get(0).getXCoord(); //x low
+		corners[1] = this.points.get(0).getXCoord(); //x high
+		corners[2] = this.points.get(0).getYCoord(); //y low
+		corners[3] = this.points.get(0).getYCoord(); //y high
+		for(int i = 1; i < this.points.size(); ++i){
+			Temporal point = this.points.get(i);
+			if(point.getXCoord() < corners[0]){
+				corners[0] = point.getXCoord();
+			}
+			if(point.getXCoord() > corners[1]){
+				corners[1] = point.getXCoord();
+			}
+			if(point.getYCoord() < corners[2]){
+				corners[2] = point.getYCoord();
+			}
+			if(point.getYCoord() > corners[3]){
+				corners[3] = point.getYCoord();
+			}
+		}
+		
+		//Should add area to box to include space radius, but space radius is in KM not lat,long
+		double padding = 0.02;
+		corners[0] -= padding;
+		corners[1] += padding;
+		corners[2] -= padding;
+		corners[3] += padding;
+		return corners;
 	}
 	
 	//WARNING: untested
@@ -218,7 +251,6 @@ public class WindowCompute {
 	
 	
 	/**
-	 * Warning: This function does not include correct probability aggregates
 	 */
 	public void printWindow(){
 		WindowChart wc = new WindowChart("Window");
@@ -246,7 +278,7 @@ public class WindowCompute {
 					contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
 					
 					if(contribution > Init.SPACE_TRIM){
-						contribution /= 100; //convert to probabilty so getAggProb function can work properly
+						contribution /= 100; //convert to probability so getAggProb function can work properly
 						nearby.add(contribution * this.points.get(i).getTimeRelevance(Init.CURRENT_TIMESTAMP,Init.REFERENCE_TIMESTAMP,Init.TEMPORAL_DECAY));
 					}
 				}
@@ -272,6 +304,12 @@ public class WindowCompute {
 			}
 		}
 		wc.plot();
+		
+		double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
+		System.out.println("maxWeight: " + maxWeight);
+		System.out.println("totalWeight: " + totalWeight);
+		System.out.println("#iterations: " + iterations);
+		System.out.println("Window Prob: " + (totalWeight / maxWeight * 100));
 		
 		/*
 		for(double x = x1; x <= x2; x = x + this.xgridGranularity){
@@ -299,9 +337,28 @@ public class WindowCompute {
 	}
 	
 	public static double getDistanceBetween(double[] p1, double[] p2){
-		double xDiff = p1[0] - p2[0];
-		double yDiff = p1[1] - p2[1];
-		return Math.pow((Math.pow(xDiff, 2) + Math.pow(yDiff, 2)),0.5); //To-Do! don't return actual distance, save expensive divide
+		
+		//Bad version of pythagorean theorem
+		//double xDiff = p1[0] - p2[0];
+		//double yDiff = p1[1] - p2[1];
+		//return Math.pow((Math.pow(xDiff, 2) + Math.pow(yDiff, 2)),0.5); //To-Do! don't return actual distance, save expensive divide
+
+		/* test a single point
+		p1[0] = 37.75015;
+		p1[1] = -122.39256;
+		p2[0] = 37.79779;
+		p2[1] = -122.40646;
+		*/
+		
+		double R = 6371;
+		double lat1 = Math.toRadians(p1[0]);
+		double lat2 = Math.toRadians(p2[0]);
+		double long1 = Math.toRadians(p1[1]);
+		double long2 = Math.toRadians(p2[1]);
+		double d = Math.acos(Math.sin(lat1) * Math.sin(lat2) +
+						     Math.cos(lat1) * Math.cos(lat2) *
+						     Math.cos(long2 - long1)) * R;
+		return d;
 	}
 	
 	public double getAbsoluteValue(double val){
