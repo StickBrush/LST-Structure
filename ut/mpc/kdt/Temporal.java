@@ -30,6 +30,14 @@ public class Temporal {
 		return this.y;
 	}
 	
+	public void setXCoord(double value){
+		this.x = value;
+	}
+	
+	public void setYCoord(double value){
+		this.y = value;
+	}
+	
 	public long getTimeStamp(){
 		return this.timeStamp;
 	}

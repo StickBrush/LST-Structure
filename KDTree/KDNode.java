@@ -10,7 +10,7 @@ import java.util.Vector;
 
 // K-D Tree node class
 
-class KDNode {
+public class KDNode {
 
     // these are seen by KDTree
     protected HPoint k;
@@ -20,6 +20,33 @@ class KDNode {
     protected KDNode left, right;
 
     protected boolean deleted;
+    
+    
+    //
+    // Extending the class for KDTTree and printing capabilities
+    // 
+    protected int balance;
+
+    public KDNode getLeftNode(){
+    	return left;
+    }
+    
+    public KDNode getRightNode(){
+    	return right;
+    }
+    
+    //Prints the coordinates
+    public void print(){
+    	System.out.print(k.toString());
+    	System.out.print(" (" + this.getBalance() + ") ");
+    }
+    
+    public int getBalance(){
+    	return this.balance;
+    }
+    //
+    //End extending the class
+    //
 
     // Method ins translated from 352.ins.c of Gonnet & Baeza-Yates
     protected static KDNode ins(HPoint key, Object val, KDNode t, int lev, int K)  {
@@ -45,8 +72,10 @@ class KDNode {
         }
 
         else if (key.coord[lev] > t.k.coord[lev]) {
+        	t.balance--;
             t.right = ins(key, val, t.right, (lev + 1) % K, K);
         } else {
+        	t.balance++;
             t.left = ins(key, val, t.left, (lev + 1) % K, K);
         }
 
@@ -215,6 +244,7 @@ class KDNode {
     // constructor is used only by class; other methods are static
     private KDNode(HPoint key, Object val) {
 
+    	balance = 0;
         k = key;
         v = val;
         left = null;

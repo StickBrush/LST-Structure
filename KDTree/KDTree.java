@@ -33,8 +33,9 @@ public class KDTree {
 	// K = number of dimensions
 	private int m_K;
 
+	//Changed to protected for extension
 	// root of KD-tree
-	private KDNode m_root;
+	protected KDNode m_root;
 
 	// count of nodes
 	private int m_count;

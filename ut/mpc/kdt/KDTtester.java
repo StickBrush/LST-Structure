@@ -12,9 +12,6 @@ public class KDTtester {
 	
 	public static void main(String[] args){
 		kdtree = new KDTTree(2);
-			
-		
-		System.out.println(System.getProperty("user.dir"));
 		
 		try {
 			fillPointsFromFile(); //added comment to tester
@@ -35,12 +32,12 @@ public class KDTtester {
 		*/
 		
 		double[] lowRange = new double[2];
-		lowRange[0] = -123;
 		lowRange[1] = 37.5;
+		lowRange[0] = -123;
 		
 		double[] highRange = new double[2];
-		highRange[0] = -122;
 		highRange[1] = 38;	
+		highRange[0] = -122;
 		
 		
 		double[] lowRangeSample = new double[2];
@@ -48,8 +45,8 @@ public class KDTtester {
 		lowRangeSample[1] = 0;
 		
 		double[] highRangeSample = new double[2];
-		highRangeSample[0] = 40;
-		highRangeSample[1] = -200;
+		highRangeSample[0] = 9;
+		highRangeSample[1] = 9;
 		
 		
 		//Object[] result = (Object[]) kdtree.range(lowRange, highRange);
@@ -57,15 +54,20 @@ public class KDTtester {
 		//System.out.println(((Temporal)result[0]).getTimeRelevance(40));
 		//System.out.println(kdtree.toString());
 		
-		kdtree.rangeSummary(lowRange,highRange);
+		System.out.println("******************************\n\n\n\n");
+		//kdtree.print();
+		//KDTTree balTree = kdtree.balanceTree(lowRange, highRange);
+		//balTree.rangeSummary(lowRange,highRange);
+		kdtree.rangeSummary(lowRange, highRange);
+		//balTree.print();
 		//kdtree.compareWindows(lowRangeSample, highRangeSample, lowRange, highRange);
 	}
 	
 	//@pre: requires at least one point in file, otherwise seg. fault
 	//@pre: requires first entry to be most recent and last entry to be least recent
 	public static void fillPointsFromFile() throws Exception{
-		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/small_abboip.txt"));
-		//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/data.txt"));
+		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/2000_abboip.txt"));
+		//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/1_unbalanced.txt"));
 
 		String line;
 		Temporal temp;
@@ -73,7 +75,7 @@ public class KDTtester {
 		String[] split = new String[4];
 		split = line.split(" ");
 		Init.CURRENT_TIMESTAMP = Long.parseLong(split[3]);
-		temp = new Temporal(Long.parseLong(split[3]),Double.parseDouble(split[0]),Double.parseDouble(split[1]));
+		temp = new Temporal(Long.parseLong(split[3]),Double.parseDouble(split[1]),Double.parseDouble(split[0]));
 		insertPoint(temp.getXCoord(),temp.getYCoord(),kdtree,temp);
 		
 		while ((line = br.readLine()) != null) {

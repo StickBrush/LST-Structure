@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.omg.CORBA.INITIALIZE;
 
+import ut.mpc.balance.Transform;
 import ut.mpc.setup.Init;
 
 /**
@@ -68,38 +69,45 @@ public class WindowCompute {
 		this.lowBound = lowBound;
 		this.upperBound = upperBound;
 		this.points = points;
-		System.out.println(points.get(0).getXCoord());
 	}
 	
 	//will cause exception if there are no points in the window compute
 	public double[] getBoundingBox(){
 		double[] corners = new double[4];
-		corners[0] = this.points.get(0).getXCoord(); //x low
-		corners[1] = this.points.get(0).getXCoord(); //x high
-		corners[2] = this.points.get(0).getYCoord(); //y low
-		corners[3] = this.points.get(0).getYCoord(); //y high
+		Temporal[] borderPts = new Temporal[4];
+		borderPts[0] = this.points.get(0);
+		borderPts[1] = this.points.get(0);
+		borderPts[2] = this.points.get(0);
+		borderPts[3] = this.points.get(0);
+		
 		for(int i = 1; i < this.points.size(); ++i){
 			Temporal point = this.points.get(i);
-			if(point.getXCoord() < corners[0]){
-				corners[0] = point.getXCoord();
+			if(point.getXCoord() < borderPts[0].getXCoord()){
+				borderPts[0] = point;
 			}
-			if(point.getXCoord() > corners[1]){
-				corners[1] = point.getXCoord();
+			if(point.getXCoord() > borderPts[1].getXCoord()){
+				borderPts[1] = point;
 			}
-			if(point.getYCoord() < corners[2]){
-				corners[2] = point.getYCoord();
+			if(point.getYCoord() < borderPts[2].getYCoord()){
+				borderPts[2] = point;
 			}
-			if(point.getYCoord() > corners[3]){
-				corners[3] = point.getYCoord();
+			if(point.getYCoord() > borderPts[3].getYCoord()){
+				borderPts[3] = point;
 			}
 		}
 		
+		
 		//Should add area to box to include space radius, but space radius is in KM not lat,long
-		double padding = 0.02;
-		corners[0] -= padding;
-		corners[1] += padding;
-		corners[2] -= padding;
-		corners[3] += padding;
+		double[] tempRet = new double[2];
+		tempRet = GPSLib.getCoordFromDist(borderPts[0].getYCoord(), borderPts[0].getXCoord(), Init.SPACE_RADIUS, 270);
+		corners[0] = tempRet[1];
+		tempRet = GPSLib.getCoordFromDist(borderPts[1].getYCoord(), borderPts[1].getXCoord(), Init.SPACE_RADIUS, 90);
+		corners[1] = tempRet[1];
+		tempRet = GPSLib.getCoordFromDist(borderPts[2].getYCoord(), borderPts[2].getXCoord(), Init.SPACE_RADIUS, 180);
+		corners[2] = tempRet[0];
+		tempRet = GPSLib.getCoordFromDist(borderPts[3].getYCoord(), borderPts[3].getXCoord(), Init.SPACE_RADIUS, 0);
+		corners[3] = tempRet[0];
+
 		return corners;
 	}
 	
@@ -109,7 +117,7 @@ public class WindowCompute {
 		double contribution;
 		double distFromPoint;
 		for(int i = 0; i < this.points.size(); i++){
-			distFromPoint = WindowCompute.getDistanceBetween(this.points.get(i).getCoords(),point);
+			distFromPoint = GPSLib.getDistanceBetween(this.points.get(i).getCoords(),point);
 			contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
 			tileWeight += contribution * this.points.get(i).getTimeRelevance(Init.CURRENT_TIMESTAMP,Init.REFERENCE_TIMESTAMP,Init.TEMPORAL_DECAY);
 		}
@@ -142,7 +150,7 @@ public class WindowCompute {
 					iterations++;
 					currPoint[0] = x;
 					currPoint[1] = y;
-					distFromPoint = WindowCompute.getDistanceBetween(this.points.get(i).getCoords(),currPoint);
+					distFromPoint = GPSLib.getDistanceBetween(this.points.get(i).getCoords(),currPoint);
 					contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
 					
 					if(contribution > Init.SPACE_TRIM){
@@ -234,7 +242,7 @@ public class WindowCompute {
 					iterations++;
 					currPoint[0] = x;
 					currPoint[1] = y;
-					distFromPoint = WindowCompute.getDistanceBetween(this.points.get(i).getCoords(),currPoint);
+					distFromPoint = GPSLib.getDistanceBetween(this.points.get(i).getCoords(),currPoint);
 					contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
 					if(contribution > 0)
 						totalWeight += contribution * this.points.get(i).getTimeRelevance(Init.CURRENT_TIMESTAMP,Init.REFERENCE_TIMESTAMP,Init.TEMPORAL_DECAY);
@@ -248,9 +256,116 @@ public class WindowCompute {
 		return (totalWeight / maxWeight) * 100;
 	}
 	
+	/*
+	 * Optimized print window algorithm with kdtree ranges and nearby trimming
+	 */
+	public void printWindowOpt(){
+		//Make kd tree from list of points
+		KDTTree pointsTree = Transform.makeBalancedKDTTree(points);
+		
+		WindowChart wc = new WindowChart("Window");
+		
+		double x1 = this.lowBound[0];
+		double x2 = this.upperBound[0];
+		double y1 = this.lowBound[1];
+		double y2 = this.upperBound[1];
+
+		int iterations = 0;
+		double totalWeight = 0.0;
+		int recurseIterations = 0;
+		for(double x = x1; x <= x2; x = x + this.xgridGranularity){
+			for(double y = y1; y <= y2; y = y + this.ygridGranularity){
+				double distFromPoint;
+				double tileWeight = 0.0;
+				double[] currPoint = new double[2];
+				double contribution;
+				ArrayList<Double> nearby = new ArrayList<Double>();
+				
+				
+				//To-Do -- make this a non-fixed number, should be based on distance
+				double padding = .03;
+				double[] lowk = new double[2];
+				lowk[0] = x - padding;
+				lowk[1] = y - padding;
+				double[] uppk = new double[2];
+				uppk[0] = x + padding;
+				uppk[1] = y + padding;
+				
+				Object[] objs = (Object[]) pointsTree.range(lowk,uppk);
+				
+				ArrayList<Temporal> activePoints = new ArrayList<Temporal>();
+				for(int i = 0; i < objs.length; ++i){
+					activePoints.add( (Temporal) objs[i]);
+				}
+				
+				for(int i = 0; i < activePoints.size(); i++){
+					iterations++;
+					currPoint[0] = x;
+					currPoint[1] = y;
+					distFromPoint = GPSLib.getDistanceBetween(activePoints.get(i).getCoords(),currPoint);
+					contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
+					
+					if(contribution > Init.SPACE_TRIM){
+						contribution /= 100; //convert to probability so getAggProb function can work properly
+						nearby.add(contribution * activePoints.get(i).getTimeRelevance(Init.CURRENT_TIMESTAMP,Init.REFERENCE_TIMESTAMP,Init.TEMPORAL_DECAY));
+					}
+				}
+				
+				if(activePoints.size() > 0){ //make sure not to add a point with an empty activePoints tree
+					double[] aggResults = new double[2];
+					aggResults[0] = 0;
+					aggResults[1] = 0;
+					ArrayList<Double> empty = new ArrayList<Double>();
+					this.trimNearby(nearby);
+					this.getAggProbability(aggResults,empty,nearby);
+					recurseIterations += aggResults[1];
+					if(aggResults[0] > 0)
+						tileWeight = aggResults[0] * 100;
+					else
+						tileWeight = 0.0;
+
+					//wc.addData(currPoint,new double[]{tileWeight});
+					if(tileWeight > Init.SPACE_WEIGHT){
+						Init.DebugPrint("size of nearby: " + nearby.size(), 1);
+						Init.DebugPrint("non-opt print overflow of space weight: greater probabilty than possible", 1);
+						Init.DebugPrint("tileWeight: " + tileWeight, 1);
+					}
+					totalWeight += tileWeight;
+				}
+
+			}
+		}
+		//wc.plot();
+		double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
+		System.out.println("maxWeight: " + maxWeight);
+		System.out.println("totalWeight: " + totalWeight);
+		System.out.println("#iterations: " + iterations);
+		System.out.println("#recurse iterations: " + recurseIterations);
+		System.out.println("Window Prob: " + (totalWeight / maxWeight * 100));
+
+	}
 	
+	//Pre- nearby contains all points in the nearby set
+	//Post- nearby contains a trimmed set with the most relevant pointss
+	public void trimNearby(ArrayList<Double> nearby){
+		int removedNearby = 0;
+		while(nearby.size() > 15){
+			nearby.remove(0);
+		}
+		
+		/*
+		for(int i = 0; i < nearby.size(); ++i){
+			if(nearby.get(i).doubleValue() < .9){
+				nearby.remove(i);
+				removedNearby++;
+			}
+		}
+		System.out.println("Removed nearby: " + removedNearby);
+		*/
+	}
 	
 	/**
+	 * Worst algorithm, used for comparison
 	 */
 	public void printWindow(){
 		WindowChart wc = new WindowChart("Window");
@@ -274,7 +389,7 @@ public class WindowCompute {
 					iterations++;
 					currPoint[0] = x;
 					currPoint[1] = y;
-					distFromPoint = WindowCompute.getDistanceBetween(this.points.get(i).getCoords(),currPoint);
+					distFromPoint = GPSLib.getDistanceBetween(this.points.get(i).getCoords(),currPoint);
 					contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
 					
 					if(contribution > Init.SPACE_TRIM){
@@ -293,7 +408,7 @@ public class WindowCompute {
 				else
 					tileWeight = 0.0;
 				
-				wc.addData(currPoint,new double[]{tileWeight});
+				//wc.addData(currPoint,new double[]{tileWeight});
 				if(tileWeight > Init.SPACE_WEIGHT){
 					Init.DebugPrint("size of nearby: " + nearby.size(), 1);
 					Init.DebugPrint("non-opt print overflow of space weight: greater probabilty than possible", 1);
@@ -303,12 +418,13 @@ public class WindowCompute {
 
 			}
 		}
-		wc.plot();
+		//wc.plot();
 		
 		double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
 		System.out.println("maxWeight: " + maxWeight);
 		System.out.println("totalWeight: " + totalWeight);
 		System.out.println("#iterations: " + iterations);
+		System.out.println("#recurse iterations: " + recurseIterations);
 		System.out.println("Window Prob: " + (totalWeight / maxWeight * 100));
 		
 		/*
@@ -335,31 +451,7 @@ public class WindowCompute {
 		wc.plot();
 		*/
 	}
-	
-	public static double getDistanceBetween(double[] p1, double[] p2){
-		
-		//Bad version of pythagorean theorem
-		//double xDiff = p1[0] - p2[0];
-		//double yDiff = p1[1] - p2[1];
-		//return Math.pow((Math.pow(xDiff, 2) + Math.pow(yDiff, 2)),0.5); //To-Do! don't return actual distance, save expensive divide
 
-		/* test a single point
-		p1[0] = 37.75015;
-		p1[1] = -122.39256;
-		p2[0] = 37.79779;
-		p2[1] = -122.40646;
-		*/
-		
-		double R = 6371;
-		double lat1 = Math.toRadians(p1[0]);
-		double lat2 = Math.toRadians(p2[0]);
-		double long1 = Math.toRadians(p1[1]);
-		double long2 = Math.toRadians(p2[1]);
-		double d = Math.acos(Math.sin(lat1) * Math.sin(lat2) +
-						     Math.cos(lat1) * Math.cos(lat2) *
-						     Math.cos(long2 - long1)) * R;
-		return d;
-	}
 	
 	public double getAbsoluteValue(double val){
 		return (val < 0) ? -val : val;
