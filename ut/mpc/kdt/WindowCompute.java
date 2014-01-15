@@ -71,17 +71,17 @@ public class WindowCompute {
 		this.points = points;
 	}
 	
-	//will cause exception if there are no points in the window compute
-	public double[] getBoundingBox(){
-		double[] corners = new double[4];
+	public static double[] getBoundingBox(ArrayList<Temporal> points){
+		if(points.size() == 0) { return new double[]{0,0,0,0}; }
+		double[] corners = new double[8];
 		Temporal[] borderPts = new Temporal[4];
-		borderPts[0] = this.points.get(0);
-		borderPts[1] = this.points.get(0);
-		borderPts[2] = this.points.get(0);
-		borderPts[3] = this.points.get(0);
+		borderPts[0] = points.get(0);
+		borderPts[1] = points.get(0);
+		borderPts[2] = points.get(0);
+		borderPts[3] = points.get(0);
 		
-		for(int i = 1; i < this.points.size(); ++i){
-			Temporal point = this.points.get(i);
+		for(int i = 1; i < points.size(); ++i){
+			Temporal point = points.get(i);
 			if(point.getXCoord() < borderPts[0].getXCoord()){
 				borderPts[0] = point;
 			}
@@ -95,9 +95,13 @@ public class WindowCompute {
 				borderPts[3] = point;
 			}
 		}
-		
-		
-		//Should add area to box to include space radius, but space radius is in KM not lat,long
+
+		corners[4] = borderPts[0].getXCoord();
+		corners[5] = borderPts[1].getXCoord();
+		corners[6] = borderPts[2].getYCoord();
+		corners[7] = borderPts[3].getYCoord();
+		//add space radius (km) to gps coordinates
+		//note* shape is rectangle, not a square
 		double[] tempRet = new double[2];
 		tempRet = GPSLib.getCoordFromDist(borderPts[0].getYCoord(), borderPts[0].getXCoord(), Init.SPACE_RADIUS, 270);
 		corners[0] = tempRet[1];
@@ -259,11 +263,11 @@ public class WindowCompute {
 	/*
 	 * Optimized print window algorithm with kdtree ranges and nearby trimming
 	 */
-	public void printWindowOpt(){
-		//Make kd tree from list of points
-		KDTTree pointsTree = Transform.makeBalancedKDTTree(points);
+	public double calcWindowOpt(boolean printWindow){
+		if(points.size() == 0) return 0.0;
 		
-		WindowChart wc = new WindowChart("Window");
+		KDTTree pointsTree = Transform.makeBalancedKDTTree(points);
+		WindowChart wc = new WindowChart("Window"); 
 		
 		double x1 = this.lowBound[0];
 		double x2 = this.upperBound[0];
@@ -281,8 +285,9 @@ public class WindowCompute {
 				double contribution;
 				ArrayList<Double> nearby = new ArrayList<Double>();
 				
-				
 				//To-Do -- make this a non-fixed number, should be based on distance
+				//but doing this for each coordinate would significantly slow it donw
+				//.03 is about 3km
 				double padding = .03;
 				double[] lowk = new double[2];
 				lowk[0] = x - padding;
@@ -324,7 +329,7 @@ public class WindowCompute {
 					else
 						tileWeight = 0.0;
 
-					//wc.addData(currPoint,new double[]{tileWeight});
+					if(printWindow){ wc.addData(currPoint,new double[]{tileWeight}); }
 					if(tileWeight > Init.SPACE_WEIGHT){
 						Init.DebugPrint("size of nearby: " + nearby.size(), 1);
 						Init.DebugPrint("non-opt print overflow of space weight: greater probabilty than possible", 1);
@@ -335,21 +340,22 @@ public class WindowCompute {
 
 			}
 		}
-		//wc.plot();
+		if(printWindow){ wc.plot(); }		
 		double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
-		System.out.println("maxWeight: " + maxWeight);
-		System.out.println("totalWeight: " + totalWeight);
-		System.out.println("#iterations: " + iterations);
-		System.out.println("#recurse iterations: " + recurseIterations);
-		System.out.println("Window Prob: " + (totalWeight / maxWeight * 100));
-
+		double windowProb = totalWeight / maxWeight * 100;
+		Init.DebugPrint("maxWeight: " + maxWeight,3);
+		Init.DebugPrint("totalWeight: " + totalWeight,3);
+		Init.DebugPrint("#iterations: " + iterations,3);
+		Init.DebugPrint("#recurse iterations: " + recurseIterations,3);
+		Init.DebugPrint("Window Prob: " + windowProb,3);
+		return windowProb;
 	}
 	
 	//Pre- nearby contains all points in the nearby set
 	//Post- nearby contains a trimmed set with the most relevant pointss
 	public void trimNearby(ArrayList<Double> nearby){
 		int removedNearby = 0;
-		while(nearby.size() > 15){
+		while(nearby.size() > 10){
 			nearby.remove(0);
 		}
 		
@@ -367,7 +373,9 @@ public class WindowCompute {
 	/**
 	 * Worst algorithm, used for comparison
 	 */
-	public void printWindow(){
+	public double calcWindow(boolean printWindow){
+		if(points.size() == 0) return 0;
+		
 		WindowChart wc = new WindowChart("Window");
 		
 		double x1 = this.lowBound[0];
@@ -408,7 +416,7 @@ public class WindowCompute {
 				else
 					tileWeight = 0.0;
 				
-				//wc.addData(currPoint,new double[]{tileWeight});
+				if(printWindow){ wc.addData(currPoint,new double[]{tileWeight}); }
 				if(tileWeight > Init.SPACE_WEIGHT){
 					Init.DebugPrint("size of nearby: " + nearby.size(), 1);
 					Init.DebugPrint("non-opt print overflow of space weight: greater probabilty than possible", 1);
@@ -418,40 +426,16 @@ public class WindowCompute {
 
 			}
 		}
-		//wc.plot();
-		
+		if(printWindow){ wc.plot(); }		
 		double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
-		System.out.println("maxWeight: " + maxWeight);
-		System.out.println("totalWeight: " + totalWeight);
-		System.out.println("#iterations: " + iterations);
-		System.out.println("#recurse iterations: " + recurseIterations);
-		System.out.println("Window Prob: " + (totalWeight / maxWeight * 100));
-		
-		/*
-		for(double x = x1; x <= x2; x = x + this.xgridGranularity){
-			for(double y = y1; y <= y2; y = y + this.ygridGranularity){
-				double distFromPoint;
-				double tileWeight = 0.0;
-				double[] currPoint = new double[2];
-				double contribution;
-				for(int i = 0; i < this.points.size(); i++){
-					currPoint[0] = x;
-					currPoint[1] = y;
-					distFromPoint = WindowCompute.getDistanceBetween(this.points.get(i).getCoords(),currPoint);
-					contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
-					if(contribution > 0)
-						tileWeight += contribution * this.points.get(i).getTimeRelevance(Init.CURRENT_TIMESTAMP,Init.TEMPORAL_DECAY);
-				}
-				wc.addData(currPoint,new double[]{tileWeight});
-				
-				if(tileWeight > Init.SPACE_WEIGHT)
-					System.out.println("overflow of space weight: greater probabilty than possible");
-			}
-		}
-		wc.plot();
-		*/
+		double windowProb = totalWeight / maxWeight * 100;
+		Init.DebugPrint("maxWeight: " + maxWeight,3);
+		Init.DebugPrint("totalWeight: " + totalWeight,3);
+		Init.DebugPrint("#iterations: " + iterations,3);
+		Init.DebugPrint("#recurse iterations: " + recurseIterations,3);
+		Init.DebugPrint("Window Prob: " + windowProb,3);
+		return windowProb;
 	}
-
 	
 	public double getAbsoluteValue(double val){
 		return (val < 0) ? -val : val;

@@ -47,26 +47,33 @@ public class KDTtester {
 		double[] highRangeSample = new double[2];
 		highRangeSample[0] = 9;
 		highRangeSample[1] = 9;
-		
-		
-		//Object[] result = (Object[]) kdtree.range(lowRange, highRange);
-		//System.out.println(result.length);
-		//System.out.println(((Temporal)result[0]).getTimeRelevance(40));
-		//System.out.println(kdtree.toString());
-		
-		System.out.println("******************************\n\n\n\n");
-		//kdtree.print();
-		//KDTTree balTree = kdtree.balanceTree(lowRange, highRange);
+
+		kdtree.print();
+		KDTTree balTree = kdtree.balanceTree(lowRange, highRange);
 		//balTree.rangeSummary(lowRange,highRange);
-		kdtree.rangeSummary(lowRange, highRange);
-		//balTree.print();
+		//kdtree.rangeSummary(lowRange, highRange);
+		balTree.print();
 		//kdtree.compareWindows(lowRangeSample, highRangeSample, lowRange, highRange);
+		double[] key = new double[]{37.71134, -122.39488};
+		double val = kdtree.getPointProbability(key,1);
+		System.out.println(val);
+		System.out.println("----------------------------------------");
+		
+		System.out.println("*******  Optimized Print Window *******");
+        long start = System.currentTimeMillis();
+		System.out.println("Window Prob: " + kdtree.windowQuery(true,1));
+        System.out.println("Time: " + (System.currentTimeMillis() - start));
+		
+        System.out.println("*******  Un-Optimized Print Window *******");
+        long start2 = System.currentTimeMillis();
+		System.out.println("Window Prob: " + kdtree.windowQuery(false,0));
+        System.out.println("Time: " + (System.currentTimeMillis() - start2));
 	}
 	
 	//@pre: requires at least one point in file, otherwise seg. fault
 	//@pre: requires first entry to be most recent and last entry to be least recent
 	public static void fillPointsFromFile() throws Exception{
-		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/2000_abboip.txt"));
+		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/50_abboip.txt"));
 		//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/1_unbalanced.txt"));
 
 		String line;
