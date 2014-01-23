@@ -72,7 +72,7 @@ public class WindowCompute {
 	}
 	
 	public static double[] getBoundingBox(ArrayList<Temporal> points){
-		if(points.size() == 0) { return new double[]{0,0,0,0}; }
+		if(points.size() == 0) { return new double[]{0,0,0,0,0,0,0,0}; }
 		double[] corners = new double[8];
 		Temporal[] borderPts = new Temporal[4];
 		borderPts[0] = points.get(0);
@@ -288,13 +288,14 @@ public class WindowCompute {
 				//To-Do -- make this a non-fixed number, should be based on distance
 				//but doing this for each coordinate would significantly slow it donw
 				//.03 is about 3km
-				double padding = .03;
+				double paddingY = .009;
+				double paddingX = .011;
 				double[] lowk = new double[2];
-				lowk[0] = x - padding;
-				lowk[1] = y - padding;
+				lowk[0] = x - paddingX;
+				lowk[1] = y - paddingY;
 				double[] uppk = new double[2];
-				uppk[0] = x + padding;
-				uppk[1] = y + padding;
+				uppk[0] = x + paddingX;
+				uppk[1] = y + paddingY;
 				
 				Object[] objs = (Object[]) pointsTree.range(lowk,uppk);
 				
@@ -352,22 +353,15 @@ public class WindowCompute {
 	}
 	
 	//Pre- nearby contains all points in the nearby set
-	//Post- nearby contains a trimmed set with the most relevant pointss
+	//Post- nearby contains a trimmed set
+	//To-Do, sort nearby set first?
 	public void trimNearby(ArrayList<Double> nearby){
 		int removedNearby = 0;
+		Quicksort qs = new Quicksort();
+		qs.sort(nearby, 0, nearby.size() - 1);
 		while(nearby.size() > 10){
-			nearby.remove(0);
+			nearby.remove(nearby.size() - 1);
 		}
-		
-		/*
-		for(int i = 0; i < nearby.size(); ++i){
-			if(nearby.get(i).doubleValue() < .9){
-				nearby.remove(i);
-				removedNearby++;
-			}
-		}
-		System.out.println("Removed nearby: " + removedNearby);
-		*/
 	}
 	
 	/**
@@ -409,6 +403,7 @@ public class WindowCompute {
 				aggResults[0] = 0;
 				aggResults[1] = 0;
 				ArrayList<Double> empty = new ArrayList<Double>();
+				this.trimNearby(nearby);
 				this.getAggProbability(aggResults,empty,nearby);
 				recurseIterations += aggResults[1];
 				if(aggResults[0] > 0)

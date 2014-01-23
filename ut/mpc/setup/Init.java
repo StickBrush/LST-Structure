@@ -24,7 +24,7 @@ public class Init {
 	
 	public static final boolean DEBUG_LEVEL1 = true;
 	public static final boolean DEBUG_LEVEL2 = true;
-	public static final boolean DEBUG_LEVEL3 = true;
+	public static final boolean DEBUG_LEVEL3 = false;
 	
 	//level 1 for unit testing
 	//level 2 for other testing

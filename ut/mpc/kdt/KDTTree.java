@@ -13,7 +13,13 @@ public class KDTTree extends KDTree {
 	}
 	
 	//Tester function to balance tree for benchmarking
-	public KDTTree balanceTree(double[] lowk, double[] uppk){
+	public KDTTree balanceTree(){
+		double[] lowk = new double[2];
+		double[] uppk = new double[2];
+		lowk[0] = -Double.MAX_VALUE;
+		lowk[1] = -Double.MAX_VALUE;
+		uppk[0] = Double.MAX_VALUE;
+		uppk[1] = Double.MAX_VALUE;
 		Object[] objs = (Object[]) this.range(lowk,uppk);
 
 		ArrayList<Temporal> points = new ArrayList<Temporal>();
@@ -23,29 +29,6 @@ public class KDTTree extends KDTree {
 		
 		return Transform.makeBalancedKDTTree(points);
 	}
-	
-	/*
-	public void rangeSummary(double[] lowk, double[] uppk) {
-		Object[] objs = (Object[]) this.range(lowk,uppk);
-
-		ArrayList<Temporal> points = new ArrayList<Temporal>();
-		for(int i = 0; i < objs.length; ++i){
-			points.add( (Temporal) objs[i]);
-		}
-		WindowCompute wc = new WindowCompute(lowk,uppk,points);
-		double[] corners = new double[4];
-		corners = wc.getBoundingBox();
-		double[] lowers = new double[2];
-		lowers[0] = corners[0];
-		lowers[1] = corners[2];
-		double[] uppers = new double[2];
-		uppers[0] = corners[1];
-		uppers[1] = corners[3];
-		WindowCompute wc2 = new WindowCompute(lowers,uppers,points);
-		
-		
-	}
-	*/
 	
 	//no window parameters are given so it will print the entire window
 	public double windowQuery(boolean printWindow, int optLevel){
@@ -62,6 +45,7 @@ public class KDTTree extends KDTree {
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
+		
 		double[] corners = new double[4];
 		double[] lowers = new double[2];
 		double[] uppers = new double[2];
@@ -88,18 +72,37 @@ public class KDTTree extends KDTree {
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
-		double[] corners = new double[4];
+		
+		//System.out.println(points.size());
+		WindowCompute wc = new WindowCompute(lowk,uppk,points);
+		double returnVal;
+		if(optLevel == 1)
+			returnVal = wc.calcWindowOpt(printWindow);
+		else
+			returnVal = wc.calcWindow(printWindow);
+        return returnVal;
+	}
+	
+	public double windowQueryExt(double[] lowk, double[] uppk, boolean printWindow, int optLevel){
+		double[] tempRet = new double[2];
 		double[] lowers = new double[2];
 		double[] uppers = new double[2];
-		corners = WindowCompute.getBoundingBox(points);
 		
-		lowers[0] = corners[0];
-		lowers[1] = corners[2];
-		uppers[0] = corners[1];
-		uppers[1] = corners[3];
-		/*
-		WindowCompute wc = new WindowCompute(lowers,uppers,points);
-		*/
+		tempRet = GPSLib.getCoordFromDist(uppk[1], lowk[0], Init.SPACE_RADIUS, 270);
+		lowers[0] = tempRet[1];
+		tempRet = GPSLib.getCoordFromDist(uppk[1], uppk[0], Init.SPACE_RADIUS, 90);
+		uppers[0] = tempRet[1];
+		tempRet = GPSLib.getCoordFromDist(lowk[1], uppk[0], Init.SPACE_RADIUS, 180);
+		lowers[1] = tempRet[0];
+		tempRet = GPSLib.getCoordFromDist(uppk[1], lowk[1], Init.SPACE_RADIUS, 0);
+		uppers[1] = tempRet[0];
+		
+		Object[] objs = (Object[]) this.range(lowers,uppers);
+
+		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		for(int i = 0; i < objs.length; ++i){
+			points.add( (Temporal) objs[i]);
+		}
 		
 		WindowCompute wc = new WindowCompute(lowk,uppk,points);
 		if(optLevel == 1)
