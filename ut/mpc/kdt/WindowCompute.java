@@ -359,10 +359,102 @@ public class WindowCompute {
 		int removedNearby = 0;
 		Quicksort qs = new Quicksort();
 		qs.sort(nearby, 0, nearby.size() - 1);
+		//System.out.println("----------------------------");
 		while(nearby.size() > 10){
-			nearby.remove(nearby.size() - 1);
+			//System.out.println(nearby.get(0));
+			nearby.remove(0);
 		}
 	}
+	
+	/*
+	 * Optimized print window algorithm with ARRAY TREES ranges and nearby trimming
+	 */
+	public double calcWindowOptArr(boolean printWindow){
+		if(points.size() == 0) return 0.0;
+		
+		ArrayTree pointsTree = new ArrayTree(points);
+		WindowChart wc = new WindowChart("Window"); 
+		
+		double x1 = this.lowBound[0];
+		double x2 = this.upperBound[0];
+		double y1 = this.lowBound[1];
+		double y2 = this.upperBound[1];
+
+		int iterations = 0;
+		double totalWeight = 0.0;
+		int recurseIterations = 0;
+		for(double x = x1; x <= x2; x = x + this.xgridGranularity){
+			for(double y = y1; y <= y2; y = y + this.ygridGranularity){
+				double distFromPoint;
+				double tileWeight = 0.0;
+				double[] currPoint = new double[2];
+				double contribution;
+				ArrayList<Double> nearby = new ArrayList<Double>();
+				
+				//To-Do -- make this a non-fixed number, should be based on distance
+				//but doing this for each coordinate would significantly slow it donw
+				//.03 is about 3km
+				double paddingY = .009;
+				double paddingX = .011;
+				double[] lowk = new double[2];
+				lowk[0] = x - paddingX;
+				lowk[1] = y - paddingY;
+				double[] uppk = new double[2];
+				uppk[0] = x + paddingX;
+				uppk[1] = y + paddingY;
+				
+				pointsTree.range(lowk,uppk);
+				
+				ArrayList<Temporal> activePoints = pointsTree.range(lowk,uppk);
+				
+				for(int i = 0; i < activePoints.size(); i++){
+					iterations++;
+					currPoint[0] = x;
+					currPoint[1] = y;
+					distFromPoint = GPSLib.getDistanceBetween(activePoints.get(i).getCoords(),currPoint);
+					contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
+					
+					if(contribution > Init.SPACE_TRIM){
+						contribution /= 100; //convert to probability so getAggProb function can work properly
+						nearby.add(contribution * activePoints.get(i).getTimeRelevance(Init.CURRENT_TIMESTAMP,Init.REFERENCE_TIMESTAMP,Init.TEMPORAL_DECAY));
+					}
+				}
+				
+				if(activePoints.size() > 0){ //make sure not to add a point with an empty activePoints tree
+					double[] aggResults = new double[2];
+					aggResults[0] = 0;
+					aggResults[1] = 0;
+					ArrayList<Double> empty = new ArrayList<Double>();
+					this.trimNearby(nearby);
+					this.getAggProbability(aggResults,empty,nearby);
+					recurseIterations += aggResults[1];
+					if(aggResults[0] > 0)
+						tileWeight = aggResults[0] * 100;
+					else
+						tileWeight = 0.0;
+
+					if(printWindow){ wc.addData(currPoint,new double[]{tileWeight}); }
+					if(tileWeight > Init.SPACE_WEIGHT){
+						Init.DebugPrint("size of nearby: " + nearby.size(), 1);
+						Init.DebugPrint("non-opt print overflow of space weight: greater probabilty than possible", 1);
+						Init.DebugPrint("tileWeight: " + tileWeight, 1);
+					}
+					totalWeight += tileWeight;
+				}
+
+			}
+		}
+		if(printWindow){ wc.plot(); }		
+		double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
+		double windowProb = totalWeight / maxWeight * 100;
+		Init.DebugPrint("maxWeight: " + maxWeight,3);
+		Init.DebugPrint("totalWeight: " + totalWeight,3);
+		Init.DebugPrint("#iterations: " + iterations,3);
+		Init.DebugPrint("#recurse iterations: " + recurseIterations,3);
+		Init.DebugPrint("Window Prob: " + windowProb,3);
+		return windowProb;
+	}
+	
 	
 	/**
 	 * Worst algorithm, used for comparison

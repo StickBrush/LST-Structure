@@ -16,7 +16,7 @@ public class KDTtester {
 		arrtree = new ArrayTree();
 		
 		try {
-			fillPointsFromFile(args); //added comment to tester
+			fillPointsFromFile(new String[]{"new_abboip.txt"}); //added comment to tester
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -52,29 +52,34 @@ public class KDTtester {
 
 		//kdtree.print();
 		KDTTree balTree = kdtree.balanceTree();
-		//balTree.rangeSummary(lowRange,highRange);
-		//kdtree.rangeSummary(lowRange, highRange);
-		//balTree.print();
-		//kdtree.compareWindows(lowRangeSample, highRangeSample, lowRange, highRange);
-		double[] key = new double[]{37.71134, -122.39488};
+		double[] key = new double[]{37.75134,-122.39488};
 		//double val = kdtree.getPointProbability(key,1);
-		//System.out.println(val);
-		//System.out.println("Running file: " + args[0]);
-		System.out.println("*******  Optimized Print Window *******");
 		
-		//double temp = balTree.windowQuery(lowRange,highRange,false,1);
+		double lowk[] = new double[2];
+		double uppk[] = new double[2];
+		lowk[0] = -122.437;
+		lowk[1] = 37.77;
+		uppk[0] = -122.436;
+		uppk[1] = 37.78;
 		
         long start = System.currentTimeMillis();
-        for(int i = 0; i < 100; i++){
-        	double temp = balTree.windowQuery(lowRange,highRange,false,1);
-        	//System.out.println("Window Prob: " + arrtree.windowQuery(lowRange,highRange,false,1));
-        }
-        System.out.println("Time: " + (System.currentTimeMillis() - start));
+        //System.out.println("Window Prob: " + arrtree.windowQuery(lowRange,highRange,false,1));
+        //System.out.println("Time: " + (System.currentTimeMillis() - start));
+        
+        System.out.println(arrtree.points.size());
+        System.out.println(kdtree.getSize());
+        System.out.println(balTree.getSize());
+        
+        //arrtree.windowQuery(false,1);
+        //kdtree.windowQuery(false,1);
+        //balTree.windowQuery(false, 1);
 		
-        System.out.println("*******  Balance-Optimized Print Window *******");
+        System.out.println("*******  Print Window *******");
         long start2 = System.currentTimeMillis();
-        for(int i = 0; i < 200; i++){
-        	//System.out.println("Window Prob: " + kdtree.windowQuery(lowRange,highRange,false,1));
+        for(int i = 0; i < 1; i++){
+        	System.out.println("Point Prob: " + arrtree.getPointProbability(key,1));
+        	System.out.println("Point Prob: " + kdtree.getPointProbability(key,1));
+        	System.out.println("Point Prob: " + balTree.getPointProbability(key,1));
         }
         System.out.println("Time: " + (System.currentTimeMillis() - start2));
 	}
@@ -82,8 +87,8 @@ public class KDTtester {
 	//@pre: requires at least one point in file, otherwise seg. fault
 	//@pre: requires first entry to be most recent and last entry to be least recent
 	public static void fillPointsFromFile(String[] args) throws Exception{
-		//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/" + args[0]));
-		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/new_abboip.txt"));
+		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/" + args[0]));
+		//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/cabspottingdata/new_abboip.txt"));
 		//BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/1_unbalanced.txt"));
 
 		String line;
@@ -101,6 +106,7 @@ public class KDTtester {
 		   temp = new Temporal(Long.parseLong(split[3]),Double.parseDouble(split[1]),Double.parseDouble(split[0]));
 		   insertPoint(temp.getXCoord(),temp.getYCoord(),temp);
 		}
+		
 		Init.REFERENCE_TIMESTAMP = Long.parseLong(split[3]);
 		br.close();
 	}

@@ -52,10 +52,7 @@ public class Temporal {
 		long nowOffset = this.timeStamp - reference;
 		long currentOffset = current - reference;
 		double temp = (double) nowOffset / ((double) currentOffset * time_decay);
-		if(temp > 1)
-			System.out.println(temp);
 		return (double) nowOffset / ((double) currentOffset * time_decay);
-		//return 1.0;
 	}
 	
 }

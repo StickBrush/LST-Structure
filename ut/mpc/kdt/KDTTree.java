@@ -12,6 +12,10 @@ public class KDTTree extends KDTree {
 		super(k);
 	}
 	
+	public int getSize(){
+		return this.m_count;
+	}
+	
 	//Tester function to balance tree for benchmarking
 	public KDTTree balanceTree(){
 		double[] lowk = new double[2];
@@ -41,10 +45,13 @@ public class KDTTree extends KDTree {
 		
 		//collect all possible values with max negative and positive as range bounds
 		Object[] objs = (Object[]) this.range(lowk,uppk);
+		
 		ArrayList<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
+		
+		System.out.println(points.size());
 		
 		double[] corners = new double[4];
 		double[] lowers = new double[2];
@@ -73,7 +80,7 @@ public class KDTTree extends KDTree {
 			points.add( (Temporal) objs[i]);
 		}
 		
-		//System.out.println(points.size());
+		System.out.println(points.size());
 		WindowCompute wc = new WindowCompute(lowk,uppk,points);
 		double returnVal;
 		if(optLevel == 1)
@@ -123,12 +130,9 @@ public class KDTTree extends KDTree {
 		lowk[1] = tempRet[0];
 		tempRet = GPSLib.getCoordFromDist(point[0], point[1], Init.SPACE_RADIUS, 0);
 		uppk[1] = tempRet[0];
-		
-		System.out.println(lowk[0]);
-		System.out.println(uppk[0]);
-		System.out.println(lowk[1]);
-		System.out.println(uppk[1]);
-		return this.windowQuery(lowk, uppk, false, optLevel);
+
+		return this.windowQuery(new double[]{point[1]-Init.Y_GRID_GRAN,point[0]-Init.X_GRID_GRAN}, 
+								new double[]{point[1],point[0]}, false, optLevel);
 	}
 	
 	/*
@@ -144,29 +148,6 @@ public class KDTTree extends KDTree {
 		//Simple
 		if(pointProb <= Init.INS_THRESH)
 			this.insert(key, value);
-	}
-	
-	public double compareWindows(double[] lowInner, double[] uppInner, double[] lowOuter, double[] uppOuter){
-		Object[] objsInner = (Object[]) this.range(lowInner,uppInner);
-		Object[] objsOuter = (Object[]) this.range(lowOuter,uppOuter);
-		
-		ArrayList<Temporal> innerPoints = new ArrayList<Temporal>();
-		ArrayList<Temporal> outerPoints = new ArrayList<Temporal>();
-		
-		for(int i = 0; i < objsInner.length; ++i){
-			innerPoints.add( (Temporal) objsInner[i]);
-		}
-		for(int i = 0; i < objsOuter.length; ++i){
-			outerPoints.add( (Temporal) objsOuter[i]);
-		}
-		
-		WindowCompute wcInner = new WindowCompute(lowInner, uppInner, innerPoints);
-		WindowCompute wcOuter = new WindowCompute(lowOuter,uppOuter, outerPoints);
-		System.out.println("Inner Prob: " + wcInner.getWindowProbabilityOpt());
-		System.out.println("Outer Prob: " + wcOuter.getWindowProbabilityOpt());
-		
-		System.out.println("Delta: " + (wcOuter.getWindowProbabilityOpt() - wcInner.getWindowProbabilityOpt()));
-		return 10.0;
 	}
 	
 	public void print(){

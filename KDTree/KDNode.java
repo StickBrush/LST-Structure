@@ -101,7 +101,6 @@ public class KDNode {
 
     // Method rsearch translated from 352.range.c of Gonnet & Baeza-Yates
     protected static void rsearch(HPoint lowk, HPoint uppk, KDNode t, int lev, int K, Vector<KDNode> v) {
-
         if (t == null)
             return;
         if (lowk.coord[lev] <= t.k.coord[lev]) {
