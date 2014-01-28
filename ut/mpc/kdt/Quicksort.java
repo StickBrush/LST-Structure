@@ -18,9 +18,9 @@ public class Quicksort  {
 	  Quicksort qs = new Quicksort();
 	  ArrayList<Double> temp = new ArrayList<Double>();
 	  
-	  temp.add(new Double(10));
+	  temp.add(new Double(7.999));
 	  temp.add(new Double(8));
-	  temp.add(new Double(11));
+	  temp.add(new Double(8.0001));
 	  temp.add(new Double(2));
 	  temp.add(new Double(4));
 	  

@@ -10,6 +10,7 @@ import KDTree.*;
 public class KDTtester {
 	public static KDTTree kdtree;
 	public static ArrayTree arrtree;
+	public static long timer;
 	
 	public static void main(String[] args){
 		kdtree = new KDTTree(2);
@@ -52,7 +53,7 @@ public class KDTtester {
 
 		//kdtree.print();
 		KDTTree balTree = kdtree.balanceTree();
-		double[] key = new double[]{37.75134,-122.39488};
+		double[] key = new double[]{-122.39488, 37.75134,};
 		//double val = kdtree.getPointProbability(key,1);
 		
 		double lowk[] = new double[2];
@@ -66,22 +67,43 @@ public class KDTtester {
         //System.out.println("Window Prob: " + arrtree.windowQuery(lowRange,highRange,false,1));
         //System.out.println("Time: " + (System.currentTimeMillis() - start));
         
-        System.out.println(arrtree.points.size());
+        System.out.println(arrtree.getSize());
         System.out.println(kdtree.getSize());
         System.out.println(balTree.getSize());
         
-        //arrtree.windowQuery(false,1);
-        //kdtree.windowQuery(false,1);
-        //balTree.windowQuery(false, 1);
+        arrtree.windowQuery(false,1);
+        kdtree.windowQuery(false,1);
+        balTree.windowQuery(false,1);
+        
+        System.out.println("*************** Begin Benchmarking ********************");
+        startTimer();
+        System.out.println("Window prob: " + arrtree.windowQuery(false,1));
+        endTimer();
+        startTimer();
+        System.out.println("Window prob: " + kdtree.windowQuery(false,1));
+        endTimer();
+        startTimer();
+        balTree.windowQuery(false, 1);
+        endTimer();
 		
         System.out.println("*******  Print Window *******");
         long start2 = System.currentTimeMillis();
         for(int i = 0; i < 1; i++){
-        	System.out.println("Point Prob: " + arrtree.getPointProbability(key,1));
-        	System.out.println("Point Prob: " + kdtree.getPointProbability(key,1));
-        	System.out.println("Point Prob: " + balTree.getPointProbability(key,1));
+        	//System.out.println("Point Prob: " + arrtree.getPointProbability(key,1));
+        	//System.out.println("Point Prob: " + kdtree.getPointProbability(key,1));
+        	//System.out.println("Point Prob: " + balTree.getPointProbability(key,1));
         }
         System.out.println("Time: " + (System.currentTimeMillis() - start2));
+	}
+	
+	public static void startTimer(){
+		timer = System.nanoTime();    
+	}
+	
+	//prints output to screen
+	public static void endTimer(){
+		long estimatedTime = System.nanoTime() - timer;
+		System.out.println(">>>> execution time:  " + estimatedTime / 1000000 + "ms");
 	}
 	
 	//@pre: requires at least one point in file, otherwise seg. fault
@@ -112,10 +134,7 @@ public class KDTtester {
 	}
 	
 	public static void insertPoint(double x, double y, Temporal temp){
-		double[] tempKey = new double[2];
-		tempKey[0] = x;
-		tempKey[1] = y;
-		kdtree.insert(tempKey,temp);
-		arrtree.insert(temp);
+		kdtree.smartInsert(temp);
+		arrtree.smartInsert(temp);
 	}
 }

@@ -6,7 +6,7 @@ import ut.mpc.setup.Init;
 import KDTree.KDNode;
 import KDTree.KDTree;
 
-public class KDTTree extends KDTree {
+public class KDTTree extends KDTree implements STStore {
 	
 	public KDTTree (int k) {
 		super(k);
@@ -16,42 +16,64 @@ public class KDTTree extends KDTree {
 		return this.m_count;
 	}
 	
-	//Tester function to balance tree for benchmarking
-	public KDTTree balanceTree(){
-		double[] lowk = new double[2];
-		double[] uppk = new double[2];
-		lowk[0] = -Double.MAX_VALUE;
-		lowk[1] = -Double.MAX_VALUE;
-		uppk[0] = Double.MAX_VALUE;
-		uppk[1] = Double.MAX_VALUE;
-		Object[] objs = (Object[]) this.range(lowk,uppk);
+	public void insert(Temporal point){
+		double[] key = new double[]{point.getXCoord(),point.getYCoord()};
+		super.insert(key, point);
+	}
+	
+	/*
+	 * Simple smart insert with upper threshold.
+	 * In the future: include a lower bound, include temporal clustering, etc.
+	 */
+	public void smartInsert(Temporal point) {
+		double[] key = new double[]{point.getXCoord(),point.getYCoord()};
+		double pointProb = this.getPointProbability(key,1);
+		
+		//Should we establish a lower bound based on temporal aspects?
+		
+		//Simple
+		if(pointProb <= Init.INS_THRESH)
+			this.insert(key, point);
+	}
+	
+	public double getPointProbability(double[] point, int optLevel){
+		double[] lowEff = new double[2];
+		double[] uppEff = new double[2];
+		double[] spaceBound = GPSLib.getSpaceBound(new double[]{point[0],point[1]}, new double[]{point[0],point[1]});
+		lowEff[0] = spaceBound[0];
+		uppEff[0] = spaceBound[1];
+		lowEff[1] = spaceBound[2];
+		uppEff[1] = spaceBound[3];
+		
+		//return this.windowQuery(lowEff,uppEff,false,optLevel);
 
-		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		Object[] objs = (Object[]) this.range(lowEff,uppEff);
+
+		ArrayList<Temporal> activePoints = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
-			points.add( (Temporal) objs[i]);
+			activePoints.add( (Temporal) objs[i]);
 		}
 		
-		return Transform.makeBalancedKDTTree(points);
+		WindowCompute wc = new WindowCompute();
+		return wc.getPointsProb(point[0],point[1],activePoints);
 	}
 	
 	//no window parameters are given so it will print the entire window
 	public double windowQuery(boolean printWindow, int optLevel){
-		double[] lowk = new double[2];
-		double[] uppk = new double[2];
-		lowk[0] = -Double.MAX_VALUE;
-		lowk[1] = -Double.MAX_VALUE;
-		uppk[0] = Double.MAX_VALUE;
-		uppk[1] = Double.MAX_VALUE;
+		double[] lowEff = new double[2];
+		double[] uppEff = new double[2];
+		lowEff[0] = -Double.MAX_VALUE;
+		lowEff[1] = -Double.MAX_VALUE;
+		uppEff[0] = Double.MAX_VALUE;
+		uppEff[1] = Double.MAX_VALUE;
 		
 		//collect all possible values with max negative and positive as range bounds
-		Object[] objs = (Object[]) this.range(lowk,uppk);
+		Object[] objs = (Object[]) this.range(lowEff,uppEff);
 		
 		ArrayList<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
-		
-		System.out.println(points.size());
 		
 		double[] corners = new double[4];
 		double[] lowers = new double[2];
@@ -61,9 +83,6 @@ public class KDTTree extends KDTree {
 		lowers[1] = corners[2];
 		uppers[0] = corners[1];
 		uppers[1] = corners[3];
-		
-		double[] effLowk = new double[]{corners[4],corners[6]};
-		double[] effUppk = new double[]{corners[5],corners[7]};
 		
 		WindowCompute wc = new WindowCompute(lowers,uppers,points);
 		if(optLevel == 1)
@@ -80,7 +99,6 @@ public class KDTTree extends KDTree {
 			points.add( (Temporal) objs[i]);
 		}
 		
-		System.out.println(points.size());
 		WindowCompute wc = new WindowCompute(lowk,uppk,points);
 		double returnVal;
 		if(optLevel == 1)
@@ -91,20 +109,15 @@ public class KDTTree extends KDTree {
 	}
 	
 	public double windowQueryExt(double[] lowk, double[] uppk, boolean printWindow, int optLevel){
-		double[] tempRet = new double[2];
-		double[] lowers = new double[2];
-		double[] uppers = new double[2];
+		double[] lowEff = new double[2];
+		double[] uppEff = new double[2];	
+		double[] spaceBound = GPSLib.getSpaceBound(lowk, uppk);
+		lowEff[0] = spaceBound[0];
+		uppEff[0] = spaceBound[1];
+		lowEff[1] = spaceBound[2];
+		uppEff[1] = spaceBound[3];
 		
-		tempRet = GPSLib.getCoordFromDist(uppk[1], lowk[0], Init.SPACE_RADIUS, 270);
-		lowers[0] = tempRet[1];
-		tempRet = GPSLib.getCoordFromDist(uppk[1], uppk[0], Init.SPACE_RADIUS, 90);
-		uppers[0] = tempRet[1];
-		tempRet = GPSLib.getCoordFromDist(lowk[1], uppk[0], Init.SPACE_RADIUS, 180);
-		lowers[1] = tempRet[0];
-		tempRet = GPSLib.getCoordFromDist(uppk[1], lowk[1], Init.SPACE_RADIUS, 0);
-		uppers[1] = tempRet[0];
-		
-		Object[] objs = (Object[]) this.range(lowers,uppers);
+		Object[] objs = (Object[]) this.range(lowEff,uppEff);
 
 		ArrayList<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
@@ -118,36 +131,22 @@ public class KDTTree extends KDTree {
 			return wc.calcWindow(printWindow);
 	}
 	
-	public double getPointProbability(double[] point, int optLevel){
-		double[] lowk = new double[2];
-		double[] uppk = new double[2];
-		double[] tempRet = new double[2];
-		tempRet = GPSLib.getCoordFromDist(point[0], point[1], Init.SPACE_RADIUS, 270);
-		lowk[0] = tempRet[1];
-		tempRet = GPSLib.getCoordFromDist(point[0], point[1], Init.SPACE_RADIUS, 90);
-		uppk[0] = tempRet[1];
-		tempRet = GPSLib.getCoordFromDist(point[0], point[1], Init.SPACE_RADIUS, 180);
-		lowk[1] = tempRet[0];
-		tempRet = GPSLib.getCoordFromDist(point[0], point[1], Init.SPACE_RADIUS, 0);
-		uppk[1] = tempRet[0];
+	//Tester function to balance tree for benchmarking
+	public KDTTree balanceTree(){
+		double[] lowEff = new double[2];
+		double[] uppEff = new double[2];
+		lowEff[0] = -Double.MAX_VALUE;
+		lowEff[1] = -Double.MAX_VALUE;
+		uppEff[0] = Double.MAX_VALUE;
+		uppEff[1] = Double.MAX_VALUE;
+		Object[] objs = (Object[]) this.range(lowEff,uppEff);
 
-		return this.windowQuery(new double[]{point[1]-Init.Y_GRID_GRAN,point[0]-Init.X_GRID_GRAN}, 
-								new double[]{point[1],point[0]}, false, optLevel);
-	}
-	
-	/*
-	 * Simple smart insert with upper threshold.
-	 * In the future: include a lower bound, include temporal clustering, etc.
-	 */
-	public void smartInsert(double[] key, Object value) {
-		//test key
-		double pointProb = this.getPointProbability(key,1);
+		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		for(int i = 0; i < objs.length; ++i){
+			points.add( (Temporal) objs[i]);
+		}
 		
-		//Should we establish a lower bound based on temporal aspects?
-		
-		//Simple
-		if(pointProb <= Init.INS_THRESH)
-			this.insert(key, value);
+		return Transform.makeBalancedKDTTree(points);
 	}
 	
 	public void print(){

@@ -1,7 +1,7 @@
 package ut.mpc.setup;
 
 public class Init {
-	public static final double SPACE_WEIGHT = 100; //useful for scaling the magnitude of the computation numbers (good to stay within reasonable bounds to avoid rounding/overflow)
+	public static final double SPACE_WEIGHT = 10; //useful for scaling the magnitude of the computation numbers (good to stay within reasonable bounds to avoid rounding/overflow)
 	public static final double SPACE_RADIUS = 1;
 	
 	//for some reason by increasing this slightly (around .1), the total estimate will actually increase.  Could this be from rounding errors
@@ -20,11 +20,11 @@ public class Init {
 	public static long CURRENT_TIMESTAMP = 0; //this is temporary for testing purposes only, eventually this will be a method call to current time
 	public static long REFERENCE_TIMESTAMP = 0;
 	
-	public static double INS_THRESH = 2;
+	public static double INS_THRESH = 80;
 	
 	public static final boolean DEBUG_LEVEL1 = true;
 	public static final boolean DEBUG_LEVEL2 = true;
-	public static final boolean DEBUG_LEVEL3 = false;
+	public static final boolean DEBUG_LEVEL3 = true;
 	
 	//level 1 for unit testing
 	//level 2 for other testing
