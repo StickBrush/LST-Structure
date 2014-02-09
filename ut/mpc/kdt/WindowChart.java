@@ -37,7 +37,7 @@ public class WindowChart {
 	public void plot(){
         Display display = new Display();
         Shell shell = new Shell(display);
-        shell.setText(this.name);
+        shell.setText("coverage");
         shell.setSize(500, 400);
         shell.setLayout(new FillLayout());
 
@@ -66,9 +66,9 @@ public class WindowChart {
         Chart chart = new Chart(parent, SWT.NONE);
 
         // set titles
-        chart.getTitle().setText("Scatter Chart");
-        chart.getAxisSet().getXAxis(0).getTitle().setText("Score A");
-        chart.getAxisSet().getYAxis(0).getTitle().setText("Score B");
+        chart.getTitle().setText("const");
+        chart.getAxisSet().getXAxis(0).getTitle().setText("const");
+        chart.getAxisSet().getYAxis(0).getTitle().setText("const");
 
         // create scatter series
         ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()

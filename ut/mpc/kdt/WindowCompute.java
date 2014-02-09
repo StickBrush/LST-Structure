@@ -79,7 +79,7 @@ public class WindowCompute {
 	/**
 	 * Uses the inclusion-exclusion principle to determine the aggregate probability of points
 	 * Each possible combination of points is generated and summed or subtracted according to the incl-excl principle
-	 * @param sum - store the result in sum[0]
+	 * @param sum - store the result in sum[0], iteration count in sum[1]
 	 * @param active - active list of points, pass in an empty ArrayList
 	 * @param rest - remaining list of points, pass in the list of points to be computed
 	 */
@@ -121,7 +121,8 @@ public class WindowCompute {
 		if(points.size() == 0) return 0.0;
 		
 		KDTTree pointsTree = Transform.makeBalancedKDTTree(points);
-		WindowChart wc = new WindowChart("Window"); 
+		WindowChart wc = new WindowChart("Window");
+		//wc.setChartLabels("Coverage Window", "X Coords (GPS)", "Y Coords (GPS)");
 		
 		double x1 = this.lowBound[0];
 		double x2 = this.upperBound[0];
@@ -131,35 +132,15 @@ public class WindowCompute {
 		this.iterations = 0;
 		this.recurseIterations = 0;
 		
+		int count = 0;
 		double totalWeight = 0.0;
 		for(double x = x1; x < x2; x = x + this.xgridGranularity){
 			for(double y = y1; y < y2; y = y + this.ygridGranularity){
-				
-				//To-Do -- make this a non-fixed number, should be based on distance
-				//but doing this for each coordinate would significantly slow it donw
-				//these are about 1km
-				
-				//Possible idea - get accurate distance for first point, find what distance is and use that fixed value
-				double paddingY = .009;
-				double paddingX = .011;
-				double[] lowk = new double[2];
-				lowk[0] = x - paddingX;
-				lowk[1] = y - paddingY;
-				double[] uppk = new double[2];
-				uppk[0] = x + paddingX;
-				uppk[1] = y + paddingY;
-				
-				/* more accurate space region
+				count++;
 				double[] corners = new double[4];
-				corners = GPSLib.getSpaceBound(new double[]{x,y},new double[]{x,y});
-				double[] lowk = new double[2];
-				double[] uppk = new double[2];
-				lowk[0] = corners[0];
-				uppk[1] = corners[1];
-				lowk[1] = corners[2];
-				uppk[1] = corners[3];
-				*/
-				
+				corners = GPSLib.getSpaceBoundQuick(new double[]{x,y},new double[]{x,y});
+				double[] lowk = new double[]{corners[0],corners[2]};
+				double[] uppk = new double[]{corners[1],corners[3]};				
 				Object[] objs = (Object[]) pointsTree.range(lowk,uppk);
 				
 				ArrayList<Temporal> activePoints = new ArrayList<Temporal>();
@@ -172,7 +153,55 @@ public class WindowCompute {
 			}
 		}
 		if(printWindow){ wc.plot(); }
-		double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
+		double maxWeight = count * Init.SPACE_WEIGHT;
+		//double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
+		double windowProb = totalWeight / maxWeight * 100;
+		Init.DebugPrint("maxWeight: " + maxWeight,3);
+		Init.DebugPrint("totalWeight: " + totalWeight,3);
+		Init.DebugPrint("loopcount: " + count, 3);
+		Init.DebugPrint("#iterations: " + iterations,3);
+		Init.DebugPrint("#recurse iterations: " + recurseIterations,3);
+		Init.DebugPrint("Window Prob: " + windowProb,3);
+		return windowProb;
+	}
+	
+	
+	/*
+	 * Optimized print window algorithm with ARRAY TREES ranges and nearby trimming
+	 */
+	public double calcWindowOptArr(boolean printWindow){
+		if(points.size() == 0) return 0.0;
+		
+		ArrayTree pointsTree = new ArrayTree(points);
+		WindowChart wc = new WindowChart("Window"); 
+		
+		double x1 = this.lowBound[0];
+		double x2 = this.upperBound[0];
+		double y1 = this.lowBound[1];
+		double y2 = this.upperBound[1];
+
+		this.iterations = 0;
+		this.recurseIterations = 0;
+		
+		int count = 0;
+		double totalWeight = 0.0;
+		for(double x = x1; x < x2; x = x + this.xgridGranularity){
+			for(double y = y1; y < y2; y = y + this.ygridGranularity){
+				count++;
+				double[] corners = new double[4];
+				corners = GPSLib.getSpaceBoundQuick(new double[]{x,y},new double[]{x,y});
+				double[] lowk = new double[]{corners[0],corners[2]};
+				double[] uppk = new double[]{corners[1],corners[3]};
+				
+				ArrayList<Temporal> activePoints = pointsTree.range(lowk,uppk);
+				double tileWeight = this.getPointsProb(x,y,activePoints);
+				if(printWindow){ wc.addData(new double[]{x,y},new double[]{tileWeight}); }
+				totalWeight += tileWeight;
+			}
+		}
+		if(printWindow){ wc.plot(); }
+		double maxWeight = count * Init.SPACE_WEIGHT;
+		//double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
 		double windowProb = totalWeight / maxWeight * 100;
 		Init.DebugPrint("maxWeight: " + maxWeight,3);
 		Init.DebugPrint("totalWeight: " + totalWeight,3);
@@ -186,19 +215,17 @@ public class WindowCompute {
 		double distFromPoint, contribution, tileWeight;
 		ArrayList<Double> nearby = new ArrayList<Double>();
 		tileWeight = 0;
-		
 		for(int i = 0; i < activePoints.size(); i++){
 			iterations++;
 			distFromPoint = GPSLib.getDistanceBetween(activePoints.get(i).getCoords(),new double[]{x,y});
 			contribution = (-Init.SPACE_WEIGHT / Init.SPACE_RADIUS) * distFromPoint + Init.SPACE_WEIGHT;
-			
 			if(contribution > Init.SPACE_TRIM){
 				contribution /= 100; //convert to probability so getAggProb function can work properly
 				nearby.add(contribution * activePoints.get(i).getTimeRelevance(Init.CURRENT_TIMESTAMP,Init.REFERENCE_TIMESTAMP,Init.TEMPORAL_DECAY));
 			}
 		}
 		
-		if(activePoints.size() > 0){ //make sure not to add a point with an empty activePoints tree
+		if(activePoints.size() > 0 && nearby.size() > 0){ //make sure not to add a point with an empty activePoints tree
 			double[] aggResults = new double[2];
 			aggResults[0] = 0;
 			aggResults[1] = 0;
@@ -227,76 +254,10 @@ public class WindowCompute {
 		int removedNearby = 0;
 		Quicksort qs = new Quicksort();
 		qs.sort(nearby, 0, nearby.size() - 1);
-		//System.out.println("----------------------------");
 		while(nearby.size() > 10){
-			//System.out.println(nearby.get(0));
 			nearby.remove(0);
 		}
 	}
-	
-	/*
-	 * Optimized print window algorithm with ARRAY TREES ranges and nearby trimming
-	 */
-	public double calcWindowOptArr(boolean printWindow){
-		if(points.size() == 0) return 0.0;
-		
-		ArrayTree pointsTree = new ArrayTree(points);
-		WindowChart wc = new WindowChart("Window"); 
-		
-		double x1 = this.lowBound[0];
-		double x2 = this.upperBound[0];
-		double y1 = this.lowBound[1];
-		double y2 = this.upperBound[1];
-
-		this.iterations = 0;
-		this.recurseIterations = 0;
-		
-		double totalWeight = 0.0;
-		for(double x = x1; x < x2; x = x + this.xgridGranularity){
-			for(double y = y1; y < y2; y = y + this.ygridGranularity){
-				
-				//To-Do -- make this a non-fixed number, should be based on distance
-				//but doing this for each coordinate would significantly slow it donw
-				//these are about 1km
-				
-				//Possible idea - get accurate distance for first point, find what distance is and use that fixed value
-				double paddingY = .009;
-				double paddingX = .011;
-				double[] lowk = new double[2];
-				lowk[0] = x - paddingX;
-				lowk[1] = y - paddingY;
-				double[] uppk = new double[2];
-				uppk[0] = x + paddingX;
-				uppk[1] = y + paddingY;
-				
-				/* more accurate space region
-				double[] corners = new double[4];
-				corners = GPSLib.getSpaceBound(new double[]{x,y},new double[]{x,y});
-				double[] lowk = new double[2];
-				double[] uppk = new double[2];
-				lowk[0] = corners[0];
-				uppk[1] = corners[1];
-				lowk[1] = corners[2];
-				uppk[1] = corners[3];
-				*/
-				
-				ArrayList<Temporal> activePoints = pointsTree.range(lowk,uppk);
-				double tileWeight = this.getPointsProb(x,y,activePoints);
-				if(printWindow){ wc.addData(new double[]{x,y},new double[]{tileWeight}); }
-				totalWeight += tileWeight;
-			}
-		}
-		if(printWindow){ wc.plot(); }
-		double maxWeight = ((x1 - x2) / xgridGranularity) * ((y1 - y2) / ygridGranularity) * Init.SPACE_WEIGHT;
-		double windowProb = totalWeight / maxWeight * 100;
-		Init.DebugPrint("maxWeight: " + maxWeight,3);
-		Init.DebugPrint("totalWeight: " + totalWeight,3);
-		Init.DebugPrint("#iterations: " + iterations,3);
-		Init.DebugPrint("#recurse iterations: " + recurseIterations,3);
-		Init.DebugPrint("Window Prob: " + windowProb,3);
-		return windowProb;
-	}
-	
 	
 	/**
 	 * Worst algorithm, used for comparison
