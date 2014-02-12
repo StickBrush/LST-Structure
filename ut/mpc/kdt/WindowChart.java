@@ -66,9 +66,9 @@ public class WindowChart {
         Chart chart = new Chart(parent, SWT.NONE);
 
         // set titles
-        chart.getTitle().setText("const");
-        chart.getAxisSet().getXAxis(0).getTitle().setText("const");
-        chart.getAxisSet().getYAxis(0).getTitle().setText("const");
+        chart.getTitle().setText("Window Coverage");
+        chart.getAxisSet().getXAxis(0).getTitle().setText("X Axis");
+        chart.getAxisSet().getYAxis(0).getTitle().setText("Y Axis");
 
         // create scatter series
         ILineSeries scatterSeries = (ILineSeries) chart.getSeriesSet()

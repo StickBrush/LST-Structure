@@ -125,10 +125,6 @@ public class KDTTree extends KDTree implements STStore {
 		diff.close();
 	}
 	
-	public void print(String str){
-		
-	}
-	
 	//no window parameters are given so it will print the entire window
 	public double windowQuery(boolean printWindow, int optLevel){
 		double[] lowEff = new double[2];
@@ -218,6 +214,23 @@ public class KDTTree extends KDTree implements STStore {
 		}
 		
 		return Transform.makeBalancedKDTTree(points);
+	}
+	
+	public ArrayList<Temporal> getTrajectory(){
+		double[] lowEff = new double[2];
+		double[] uppEff = new double[2];
+		lowEff[0] = -Double.MAX_VALUE;
+		lowEff[1] = -Double.MAX_VALUE;
+		uppEff[0] = Double.MAX_VALUE;
+		uppEff[1] = Double.MAX_VALUE;
+		Object[] objs = (Object[]) this.range(lowEff,uppEff);
+		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		for(int i = 0; i < objs.length; ++i){
+			points.add( (Temporal) objs[i]);
+		}
+		Quicksort qs = new Quicksort();
+		qs.sortT(points, 0, points.size() - 1);
+		return points;
 	}
 	
 	public void print(){

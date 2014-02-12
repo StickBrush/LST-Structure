@@ -36,9 +36,10 @@ public class KDNode {
     }
     
     //Prints the coordinates
-    public void print(){
+    public int print(){
     	System.out.print(k.toString());
     	System.out.print(" (" + this.getBalance() + ") ");
+    	return this.getBalance();
     }
     
     public int getBalance(){

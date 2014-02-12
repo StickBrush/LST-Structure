@@ -12,7 +12,7 @@ public class MobilityWrapper {
 	//@pre: requires at least one point in file, otherwise seg. fault
 	//@pre: requires first entry to be most recent and last entry to be least recent
 	public static void fillPointsFromFile(STStore[] trees, String[] args) throws Exception {
-		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/mobilitydata/Statefair/" + args[0]));
+		BufferedReader br = new BufferedReader(new FileReader(System.getProperty("user.dir") + "/../Crawdad/mobilitydata/KAIST/" + args[0]));
 		String line;
 		Temporal temp;
 		line = br.readLine();

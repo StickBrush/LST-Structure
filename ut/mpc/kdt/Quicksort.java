@@ -30,6 +30,17 @@ public class Quicksort  {
 		  System.out.println(temp.get(i));
 	  }
   }
+  
+  public void sortT(ArrayList<Temporal> values, int low, int high){
+	    // check for empty or null array
+	    if (values == null || values.size() == 0){
+	      return;
+	    }
+	    this.numbers = values;
+	    this.number = values.size();
+	    quicksortT(low, high); 
+	  
+  }
 
   public void sort(ArrayList<Double> values, int low, int high){
 	    // check for empty or null array
@@ -148,4 +159,42 @@ public class Quicksort  {
 	//System.out.println("i: " + this.numbers.get(i).getXCoord());
 	//System.out.println("j: " + this.numbers.get(j).getXCoord());
   }
+  
+  
+  private void quicksortT(int low, int high) {
+	int i = low, j = high;
+			    // Get the pivot element from the middle of the list
+	double pivot = this.numbers.get((low + (high-low)/2)).getTimeStamp();
+	
+	// Divide into two lists
+	while (i <= j) {
+	  // If the current value from the left list is smaller then the pivot
+	  // element then get the next element from the left list
+	  while (this.numbers.get(i).getTimeStamp() < pivot) {
+	    i++;
+	  }
+	  // If the current value from the right list is larger then the pivot
+	  // element then get the next element from the right list
+	  while (this.numbers.get(j).getTimeStamp() > pivot) {
+	    j--;
+	  }
+	
+	  // If we have found a values in the left list which is larger then
+	  // the pivot element and if we have found a value in the right list
+	  // which is smaller then the pivot element then we exchange the
+	  // values.
+	  // As we are done we can increase i and j
+	  if (i <= j) {
+	    exchange(i, j);
+	    i++;
+	    j--;
+	  }
+	}
+	// Recursion
+	if (low < j)
+	  quicksortT(low, j);
+	if (i < high)
+	  quicksortT(i, high);
+  }
+
 } 

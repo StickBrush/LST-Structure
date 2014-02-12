@@ -10,47 +10,40 @@ import ut.mpc.kdt.STStore;
 import ut.mpc.setup.Init;
 import KDTree.*;
 
-public class FullWindowCabs {
-	public static KDTTree kdtree;
-	public static ArrayTree arrtree;
-	public static KDTTree naivetree;
+public class ActualEstCabs {
+	public static KDTTree kdActual;
+	public static KDTTree kdEst;
 	public static long timer;
 	
 	public static void main(String[] args){
+		args = new String[]{"new_abboip.txt"};
 		Init.setCabsDefaults();
-		kdtree = new KDTTree(2,false);
-		arrtree = new ArrayTree(false);
+		kdActual = new KDTTree(2,false);
+		kdEst = new KDTTree(2,false);
 		
-		STStore[] trees = new STStore[]{kdtree,arrtree};
+		STStore[] trees = new STStore[]{kdActual,kdEst};
 		
-		//new_aucjun.txt is small - 6413 points
-		//new_atsfiv.txt is small - 4235
-		//new_atzumbon.txt runs out of java heap space
-		
-		//new_epemvagu.txt - compact
-		//new_ucgewft.txt - medium
-		//new_ucvepnuv.txt - spread
 		try {
 	        long start = System.currentTimeMillis();
-			CabSpottingWrapper.fillPointsFromFile(trees,args); //added comment to tester
+			CabSpottingWrapper.fillPointsFromFile(trees,args);
 	        System.out.println("Time: " + (System.currentTimeMillis() - start));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		Helpers.prove("trees match in size",kdtree.getSize() == arrtree.getSize());
+		Helpers.prove("trees match in size",kdActual.getSize() == kdEst.getSize());
 		getStable();
+		Init.DEBUG_LEVEL3 = true;
 		System.out.println("Set Name >> " + args[0]);
-		System.out.println("Size is: " + kdtree.getSize());
-        System.out.println("[KDTree]");
+		System.out.println("Size is: " + kdActual.getSize());
+        System.out.println("[KDTree - Actual]");
         Helpers.startTimer();
-        kdtree.windowQuery(false, 1);
+        kdActual.windowQuery(false, 1);
         Helpers.endTimer(true);
         
-        System.out.println("[ArrayTree]");
+        System.out.println("[KDTree - Estimated]");
         Helpers.startTimer();
-        arrtree.windowQuery(false, 1);
+        kdEst.windowQuery(false, 0);
         Helpers.endTimer(true);
 	}
 	
@@ -58,11 +51,12 @@ public class FullWindowCabs {
 		long time1 = 0;
 		long time2 = 0;
 		do {
+			Init.DEBUG_LEVEL3 = false;
 			Helpers.startTimer();
-			kdtree.windowQuery(false,1);
+			kdEst.windowQuery(false,1);
 			time1 = Helpers.endTimer(false);
 			Helpers.startTimer();
-			kdtree.windowQuery(false,1);
+			kdActual.windowQuery(false,1);
 			time2 = Helpers.endTimer(false);
 		} while(!Helpers.withinOnePercent(time1,time2));
 	}

@@ -46,9 +46,15 @@ public class RTree<T>
    *          the number of dimensions of the RTree.
    */
   public static void main(String[] args){
-	  RTree temp = new RTree(10,3,2);
-	  
-	  
+	  RTree<String> temp = new RTree(10,3,2);
+	  temp.insert(new float[]{2,2}, "hello");
+	  temp.insert(new float[]{3,4}, "yo");
+	  temp.insert(new float[]{5,2}, "yo2");
+	  System.out.println(temp.visualize());
+	  List<String> rets = temp.search(new float[]{2,2}, new float[]{1,1});
+	  for(int i = 0; i < rets.size(); i++){
+		  System.out.print(rets.get(i));
+	  }
   }
   
   
