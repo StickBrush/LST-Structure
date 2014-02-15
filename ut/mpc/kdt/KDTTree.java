@@ -252,7 +252,34 @@ public class KDTTree extends KDTree implements STStore {
 	    else
 	        root.print();
 	    printBinaryTree(root.getLeftNode(), level+1);
-	} 
+	}
+	
+	public double getBalance(){
+		double[] retVals = getBalanceRecurse(m_root);
+		return retVals[1];
+	}
+	
+	//returns an array [0] - number of subchildren including itself
+	//returns an array [1] - balance of this subtree including itself
+	public static double[] getBalanceRecurse(KDNode root){
+		double[] retVals = new double[2];
+		if(root == null){
+			retVals[0] = 0;
+			retVals[1] = 0;
+			return retVals;
+		}
+		double[] valsLeft = getBalanceRecurse(root.getLeftNode());
+		double[] valsRight = getBalanceRecurse(root.getRightNode());
+		retVals[0] = valsLeft[0] + valsRight[0];
+		if(retVals[0] == 0){
+			retVals[1] = 0;
+			retVals[0] = 1;
+		} else {
+			retVals[1] = valsLeft[1] + valsRight[1] + (Math.abs(root.getBalance()) / retVals[0]);
+			retVals[0] += 1;
+		}
+		return retVals;
+	}
 	
 	public void printRecurse(KDNode node){
 		if(node != null){

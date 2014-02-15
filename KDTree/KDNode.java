@@ -25,7 +25,7 @@ public class KDNode {
     //
     // Extending the class for KDTTree and printing capabilities
     // 
-    protected int balance;
+    protected int balance = 0;
 
     public KDNode getLeftNode(){
     	return left;

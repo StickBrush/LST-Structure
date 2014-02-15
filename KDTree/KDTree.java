@@ -77,12 +77,14 @@ public class KDTree {
 		if (key.length != m_K) {
 			throw new RuntimeException("KDTree: wrong key size!");
 		} else {
-			//added check to see if node was already in tree before incrementing count
+			//added check to see if node was already in tree before incrementing count and inserting
+			//this maintains correct balances in the nodes as well
 			KDNode search = KDNode.srch(new HPoint(key), m_root, m_K);
 			if(search == null){
 				m_count++;
+				m_root = KDNode.ins(new HPoint(key), value, m_root, 0, m_K);
 			}
-			m_root = KDNode.ins(new HPoint(key), value, m_root, 0, m_K);
+
 		}
 	}
 

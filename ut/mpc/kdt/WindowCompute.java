@@ -254,7 +254,7 @@ public class WindowCompute {
 		int removedNearby = 0;
 		Quicksort qs = new Quicksort();
 		qs.sort(nearby, 0, nearby.size() - 1);
-		while(nearby.size() > 10){
+		while(nearby.size() > Init.TRIM_THRESH){
 			nearby.remove(0);
 		}
 	}

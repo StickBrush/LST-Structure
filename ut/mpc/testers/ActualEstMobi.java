@@ -16,7 +16,7 @@ public class ActualEstMobi {
 	public static long timer;
 	
 	public static void main(String[] args){
-		args = new String[]{"KAIST003.txt"};
+		args = new String[]{"custom.txt"};
 		Init.setMobilityDefaults();
 		kdActual = new KDTTree(2,false);
 		kdEst = new KDTTree(2,false);
@@ -30,6 +30,9 @@ public class ActualEstMobi {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println(" >>>>> " + kdActual.getBalance() );
+		kdActual.print();
 		
 		Helpers.prove("trees match in size",kdActual.getSize() == kdEst.getSize());
 		getStable();
