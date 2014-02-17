@@ -55,4 +55,11 @@ public class Temporal {
 		return (double) nowOffset / ((double) currentOffset * time_decay);
 	}
 	
+	public String toString(){
+		String s = "X: " + this.x + " ";
+		s+= "Y: " + this.y + " ";
+		s+= "stamp: " + this.timeStamp + " ";
+		return s;
+	}
+	
 }

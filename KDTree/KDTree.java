@@ -6,7 +6,11 @@
  */
 package KDTree;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+
+import ut.mpc.kdt.Temporal;
 
 /**
  * KDTree is a class supporting KD-tree insertion, deletion, equality search,
@@ -37,6 +41,10 @@ public class KDTree {
 	// root of KD-tree
 	protected KDNode m_root;
 
+	protected KDNode begin;
+	
+	protected KDNode end;
+	
 	// count of nodes
 	protected int m_count;
 
@@ -50,6 +58,85 @@ public class KDTree {
 
 		m_K = k;
 		m_root = null;
+		begin = null;
+		end = null;
+	}
+	
+	//get sequence between p1 and p2 (inclusive)
+	//p1 may occur before p2 or vice versa, the order is determined by the direction the tree is walked
+	//if doesn't find p1 and p2 in sequence, then returns empty list
+	public List<Object> getSequence(double[] p1, double[] p2, boolean chrono){
+		KDNode point1 = new KDNode(new HPoint(p1));
+		KDNode point2 = new KDNode(new HPoint(p2));
+		
+		List<Object> seq = new ArrayList<Object>(); 
+
+		boolean insert = false;
+		if(chrono){ //chronological
+			KDNode next = begin;
+			while(next != null){
+				if(next.equals(point1) || next.equals(point2)){
+					insert = !insert;
+					seq.add(next.v);
+					if(insert == false) return seq;
+					if(point1.equals(point2)) return seq;
+				} else if(insert){
+					seq.add(next.v);
+				}
+				next = next.next;
+			}
+		} else { //reverse chronological
+			KDNode next = end;
+			while(next != null){
+				if(next.equals(point1) || next.equals(point2)){
+					insert = !insert;
+					seq.add(next.v);
+					if(insert == false) return seq;
+					if(point1.equals(point2)) return seq;
+				} else if(insert){
+					seq.add(next.v);
+				}
+				next = next.previous;
+			}
+		}
+		if(insert == true) //found only one match on the bounds
+			return new ArrayList<Object>();
+		else 
+			return seq;
+	}
+	
+	
+	//get sequence between t1 and t2 (inclusive)
+	//p1 must occur before or at the same time as p2, otherwise return an empty list
+	public List<Object> getSequence(long t1, long t2, boolean chrono){
+		List<Object> seq = new ArrayList<Object>(); 
+
+		if(t2 < t1) return seq;
+
+		if(chrono){ //chronological
+			KDNode next = begin;
+			while(next != null){
+				long nextT = ((Temporal)next.v).getTimeStamp();
+				if (nextT >= t1 && nextT <= t2){
+					seq.add(next.v);
+				} else if (nextT > t2) {
+					return seq;
+				}
+				next = next.next;
+			}
+		} else { //reverse chronological
+			KDNode next = end;
+			while(next != null){
+				long nextT = ((Temporal)next.v).getTimeStamp();
+				if (nextT >= t1 && nextT <= t2){
+					seq.add(next.v);
+				} else if (nextT < t1) {
+					return seq;
+				}
+				next = next.previous;
+			}
+		}
+		return seq;
 	}
 
 	/**
@@ -82,7 +169,11 @@ public class KDTree {
 			KDNode search = KDNode.srch(new HPoint(key), m_root, m_K);
 			if(search == null){
 				m_count++;
-				m_root = KDNode.ins(new HPoint(key), value, m_root, 0, m_K);
+				m_root = KDNode.ins(new HPoint(key), value, m_root, 0, m_K, this);
+				if(m_count == 1){
+					begin = m_root;
+				}
+
 			}
 
 		}

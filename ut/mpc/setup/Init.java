@@ -33,6 +33,13 @@ public class Init {
 	public static boolean DEBUG_LEVEL2 = true;
 	public static boolean DEBUG_LEVEL3 = false;
 	
+	public static class CoverageWindow{
+		public static int OPT_LEVEL = 1;
+		public static boolean PLOT = false;
+	}
+	
+	
+	
 	//level 1 for unit testing
 	//level 2 for other testing
 	//level 3 for performance benchmarking

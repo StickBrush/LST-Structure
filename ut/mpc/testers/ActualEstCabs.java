@@ -30,7 +30,11 @@ public class ActualEstCabs {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		KDTTree balance = kdActual.balanceTree();
+		balance.print();
+		System.out.println("[ >>>>> ] " + kdActual.getBalance() / (kdActual.getSize() - 1));
 		
+
 		Helpers.prove("trees match in size",kdActual.getSize() == kdEst.getSize());
 		getStable();
 		Init.DEBUG_LEVEL3 = true;

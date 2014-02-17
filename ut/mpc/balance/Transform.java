@@ -1,23 +1,25 @@
 package ut.mpc.balance;
 
 import java.util.ArrayList;
-import ut.mpc.kdt.Temporal;
+import java.util.List;
 
+import ut.mpc.kdt.Temporal;
 import ut.mpc.kdt.KDTTree;
 import ut.mpc.kdt.Quicksort;
 import ut.mpc.kdt.Temporal;
 
+//Warning that balancing a tree will invalidate the sequence portion of the structure
 public class Transform {
 	private static KDTTree kdtree;
 	
-	public static KDTTree makeBalancedKDTTree(ArrayList<Temporal> points){
+	public static KDTTree makeBalancedKDTTree(List<Temporal> points){
 		kdtree = new KDTTree(2);
 		int treeSize = points.size();
 		makeTreeRecurse(points,0,treeSize - 1, true);
 		return kdtree;
 	}
 	
-	public static KDTTree makeRandomKDTTree(ArrayList<Temporal> points){
+	public static KDTTree makeRandomKDTTree(List<Temporal> points){
 		kdtree = new KDTTree(2);
 		for(int i = 0; i < points.size(); i++){
 			Temporal thisPoint = points.get(i);
@@ -27,7 +29,7 @@ public class Transform {
 		return kdtree;
 	}
 	
-	private static void makeTreeRecurse(ArrayList<Temporal> points, int start, int end, boolean isX){
+	private static void makeTreeRecurse(List<Temporal> points, int start, int end, boolean isX){
 		if(start <= end){
 
 			Quicksort qsort = new Quicksort();

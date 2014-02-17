@@ -29,7 +29,6 @@ class HPoint {
     }
 
     protected boolean equals(HPoint p) {
-
         // seems faster than java.util.Arrays.equals(), which is not
         // currently supported by Matlab anyway
         for (int i = 0; i < coord.length; ++i)

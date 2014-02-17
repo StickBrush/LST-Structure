@@ -1,13 +1,14 @@
 package ut.mpc.kdt;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ut.mpc.setup.Init;
 
 public class ArrayTree implements STStore {
 	private boolean smartInsert = true;
 	private boolean keepDuplicates = false;
-	private ArrayList<Temporal> points = new ArrayList<Temporal>();
+	private List<Temporal> points = new ArrayList<Temporal>();
 	
 	public ArrayTree(){}
 	
@@ -15,7 +16,7 @@ public class ArrayTree implements STStore {
 		this.smartInsert = smartInsert;
 	}
 	
-	public ArrayTree(ArrayList<Temporal> points){
+	public ArrayTree(List<Temporal> points){
 		this.points = points;
 	}
 	
@@ -62,7 +63,7 @@ public class ArrayTree implements STStore {
 		uppEff[0] = spaceBound[1];
 		lowEff[1] = spaceBound[2];
 		uppEff[1] = spaceBound[3];
-		ArrayList<Temporal> activePoints = this.range(lowEff,uppEff);
+		List<Temporal> activePoints = this.range(lowEff,uppEff);
 		WindowCompute wc = new WindowCompute();
 		return wc.getPointsProb(point[0],point[1],activePoints);
 	}
@@ -77,7 +78,7 @@ public class ArrayTree implements STStore {
 		uppEff[1] = Double.MAX_VALUE;
 		
 		//collect all possible values with max negative and positive as range bounds
-		ArrayList<Temporal> foundPoints = this.range(lowEff,uppEff);
+		List<Temporal> foundPoints = this.range(lowEff,uppEff);
 		
 		double[] corners = new double[4];
 		double[] lowers = new double[2];
@@ -96,7 +97,7 @@ public class ArrayTree implements STStore {
 	}
 	
 	public double windowQuery(double[] lowk, double[] uppk, boolean printWindow, int optLevel){
-		ArrayList<Temporal> foundPoints = this.range(lowk,uppk);
+		List<Temporal> foundPoints = this.range(lowk,uppk);
 		WindowCompute wc = new WindowCompute(lowk,uppk,foundPoints);
 		if(optLevel == 1)
 			return wc.calcWindowOptArr(printWindow);
@@ -113,7 +114,7 @@ public class ArrayTree implements STStore {
 		lowEff[1] = spaceBound[2];
 		uppEff[1] = spaceBound[3];
 		
-		ArrayList<Temporal> foundPoints = this.range(lowEff,uppEff);
+		List<Temporal> foundPoints = this.range(lowEff,uppEff);
 
 		WindowCompute wc = new WindowCompute(lowk,uppk,foundPoints);
 		if(optLevel == 1)
@@ -133,8 +134,8 @@ public class ArrayTree implements STStore {
 		return -1;
 	}
 	
-	public ArrayList<Temporal> range(double[] lowk, double[] uppk){
-		ArrayList<Temporal> foundPoints = new ArrayList<Temporal>();
+	public List<Temporal> range(double[] lowk, double[] uppk){
+		List<Temporal> foundPoints = new ArrayList<Temporal>();
 		for(int i = 0; i < this.points.size(); i++){
 			Temporal currPoint = this.points.get(i);
 			if(currPoint.getXCoord() >= lowk[0] 

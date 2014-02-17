@@ -1,8 +1,7 @@
 package ut.mpc.kdt;
 
 import java.util.ArrayList;
-
-import org.omg.CORBA.INITIALIZE;
+import java.util.List;
 
 import ut.mpc.balance.Transform;
 import ut.mpc.setup.Init;
@@ -16,14 +15,14 @@ public class WindowCompute {
 	private double ygridGranularity = Init.Y_GRID_GRAN;
 	private double[] lowBound;
 	private double[] upperBound;
-	private ArrayList<Temporal> points = new ArrayList<Temporal>();
+	private List<Temporal> points = new ArrayList<Temporal>();
 	private int iterations = 0;
 	private int recurseIterations = 0;
 	
 	public WindowCompute(){}
 	
 	//should assume points are within the bounds, for now
-	public WindowCompute(double[] lowBound, double[] upperBound, ArrayList<Temporal> points){
+	public WindowCompute(double[] lowBound, double[] upperBound, List<Temporal> points){
 		this.lowBound = lowBound;
 		this.upperBound = upperBound;
 		this.points = points;
@@ -37,7 +36,7 @@ public class WindowCompute {
 		return this.recurseIterations;
 	}
 	
-	public static double[] getBoundingBox(ArrayList<Temporal> points){
+	public static double[] getBoundingBox(List<Temporal> points){
 		if(points.size() == 0) { return new double[]{0,0,0,0,0,0,0,0}; }
 		double[] corners = new double[8];
 		Temporal[] borderPts = new Temporal[4];
@@ -80,10 +79,10 @@ public class WindowCompute {
 	 * Uses the inclusion-exclusion principle to determine the aggregate probability of points
 	 * Each possible combination of points is generated and summed or subtracted according to the incl-excl principle
 	 * @param sum - store the result in sum[0], iteration count in sum[1]
-	 * @param active - active list of points, pass in an empty ArrayList
+	 * @param active - active list of points, pass in an empty List
 	 * @param rest - remaining list of points, pass in the list of points to be computed
 	 */
-	public void getAggProbability(double[] sum, ArrayList<Double> active, ArrayList<Double> rest){
+	public void getAggProbability(double[] sum, List<Double> active, List<Double> rest){
 		sum[1]++;
 		if(rest.size() == 0){
 			double sign;
@@ -102,9 +101,9 @@ public class WindowCompute {
 			sum[0] += andValue * sign;
 		} else {
 			//shallow copy of lists
-			ArrayList<Double> next1 = new ArrayList<Double>(active);
-			ArrayList<Double> next2 = new ArrayList<Double>(rest);
-			ArrayList<Double> next3 = new ArrayList<Double>(active);
+			List<Double> next1 = new ArrayList<Double>(active);
+			List<Double> next2 = new ArrayList<Double>(rest);
+			List<Double> next3 = new ArrayList<Double>(active);
 			next1.add(rest.get(0));
 			next2.remove(0);
 
@@ -143,7 +142,7 @@ public class WindowCompute {
 				double[] uppk = new double[]{corners[1],corners[3]};				
 				Object[] objs = (Object[]) pointsTree.range(lowk,uppk);
 				
-				ArrayList<Temporal> activePoints = new ArrayList<Temporal>();
+				List<Temporal> activePoints = new ArrayList<Temporal>();
 				for(int i = 0; i < objs.length; ++i){
 					activePoints.add( (Temporal) objs[i]);
 				}
@@ -193,7 +192,7 @@ public class WindowCompute {
 				double[] lowk = new double[]{corners[0],corners[2]};
 				double[] uppk = new double[]{corners[1],corners[3]};
 				
-				ArrayList<Temporal> activePoints = pointsTree.range(lowk,uppk);
+				List<Temporal> activePoints = pointsTree.range(lowk,uppk);
 				double tileWeight = this.getPointsProb(x,y,activePoints);
 				if(printWindow){ wc.addData(new double[]{x,y},new double[]{tileWeight}); }
 				totalWeight += tileWeight;
@@ -211,9 +210,9 @@ public class WindowCompute {
 		return windowProb;
 	}
 	
-	public double getPointsProb(double x, double y, ArrayList<Temporal> activePoints){
+	public double getPointsProb(double x, double y, List<Temporal> activePoints){
 		double distFromPoint, contribution, tileWeight;
-		ArrayList<Double> nearby = new ArrayList<Double>();
+		List<Double> nearby = new ArrayList<Double>();
 		tileWeight = 0;
 		for(int i = 0; i < activePoints.size(); i++){
 			iterations++;
@@ -229,7 +228,7 @@ public class WindowCompute {
 			double[] aggResults = new double[2];
 			aggResults[0] = 0;
 			aggResults[1] = 0;
-			ArrayList<Double> empty = new ArrayList<Double>();
+			List<Double> empty = new ArrayList<Double>();
 			this.trimNearby(nearby);
 			this.getAggProbability(aggResults,empty,nearby);
 			recurseIterations += aggResults[1];
@@ -250,7 +249,7 @@ public class WindowCompute {
 	//Pre- nearby contains all points in the nearby set
 	//Post- nearby contains a trimmed set
 	//To-Do, sort nearby set first?
-	public void trimNearby(ArrayList<Double> nearby){
+	public void trimNearby(List<Double> nearby){
 		int removedNearby = 0;
 		Quicksort qs = new Quicksort();
 		qs.sort(nearby, 0, nearby.size() - 1);
@@ -281,7 +280,7 @@ public class WindowCompute {
 				double tileWeight = 0.0;
 				double[] currPoint = new double[2];
 				double contribution;
-				ArrayList<Double> nearby = new ArrayList<Double>();
+				List<Double> nearby = new ArrayList<Double>();
 				for(int i = 0; i < this.points.size(); i++){
 					iterations++;
 					currPoint[0] = x;
@@ -297,7 +296,7 @@ public class WindowCompute {
 				double[] aggResults = new double[2];
 				aggResults[0] = 0;
 				aggResults[1] = 0;
-				ArrayList<Double> empty = new ArrayList<Double>();
+				List<Double> empty = new ArrayList<Double>();
 				this.trimNearby(nearby);
 				this.getAggProbability(aggResults,empty,nearby);
 				recurseIterations += aggResults[1];

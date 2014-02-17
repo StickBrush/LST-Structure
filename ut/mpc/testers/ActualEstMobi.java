@@ -3,10 +3,13 @@ package ut.mpc.testers;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.lang.management.ClassLoadingMXBean;
+import java.util.ArrayList;
+import java.util.List;
 
 import ut.mpc.kdt.ArrayTree;
 import ut.mpc.kdt.KDTTree;
 import ut.mpc.kdt.STStore;
+import ut.mpc.kdt.Temporal;
 import ut.mpc.setup.Init;
 import KDTree.*;
 
@@ -16,7 +19,7 @@ public class ActualEstMobi {
 	public static long timer;
 	
 	public static void main(String[] args){
-		args = new String[]{"custom.txt"};
+		args = new String[]{"KAIST001.txt"};
 		Init.setMobilityDefaults();
 		kdActual = new KDTTree(2,false);
 		kdEst = new KDTTree(2,false);
@@ -31,8 +34,16 @@ public class ActualEstMobi {
 			e.printStackTrace();
 		}
 		
-		System.out.println(" >>>>> " + kdActual.getBalance() );
-		kdActual.print();
+		System.out.println("\n");
+	
+		List<Temporal> temps = kdActual.findPath(119, 120, true);
+		
+		System.out.println("returned sequence");
+		for(int i = 0; i < temps.size(); ++i){
+			System.out.println(temps.get(i));
+		}
+		
+		System.out.println("[ >>>>> ] " + kdActual.getBalance() / (kdActual.getSize() - 1));
 		
 		Helpers.prove("trees match in size",kdActual.getSize() == kdEst.getSize());
 		getStable();
@@ -48,6 +59,7 @@ public class ActualEstMobi {
         Helpers.startTimer();
         kdEst.windowQuery(false, 1);
         Helpers.endTimer(true);
+        
 	}
 	
 	public static void getStable(){

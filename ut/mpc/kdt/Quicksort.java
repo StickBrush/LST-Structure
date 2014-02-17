@@ -6,17 +6,18 @@
 package ut.mpc.kdt;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Quicksort  {
-  private ArrayList<Temporal> numbers;
-  private ArrayList<Double> numbersDub;
+  private List<Temporal> numbers;
+  private List<Double> numbersDub;
   private int number;
   private int low;
   private int high;
   
   public static void main(String[] args){
 	  Quicksort qs = new Quicksort();
-	  ArrayList<Double> temp = new ArrayList<Double>();
+	  List<Double> temp = new ArrayList<Double>();
 	  
 	  temp.add(new Double(7.999));
 	  temp.add(new Double(8));
@@ -31,7 +32,7 @@ public class Quicksort  {
 	  }
   }
   
-  public void sortT(ArrayList<Temporal> values, int low, int high){
+  public void sortT(List<Temporal> values, int low, int high){
 	    // check for empty or null array
 	    if (values == null || values.size() == 0){
 	      return;
@@ -42,7 +43,7 @@ public class Quicksort  {
 	  
   }
 
-  public void sort(ArrayList<Double> values, int low, int high){
+  public void sort(List<Double> values, int low, int high){
 	    // check for empty or null array
 	    if (values == null || values.size() == 0){
 	      return;
@@ -96,7 +97,7 @@ public class Quicksort  {
   
   
   
-  public void sort(ArrayList<Temporal> values, int low, int high, boolean isX) {
+  public void sort(List<Temporal> values, int low, int high, boolean isX) {
 	    // check for empty or null array
 	    if (values == null || values.size() == 0){
 	      return;

@@ -18,7 +18,9 @@ public class KDNode {
     Object v;
 
     protected KDNode left, right;
-
+    
+    protected KDNode next, previous  ;
+    
     protected boolean deleted;
     
     
@@ -33,6 +35,14 @@ public class KDNode {
     
     public KDNode getRightNode(){
     	return right;
+    }
+    
+    public Object getObject(){
+    	return v;
+    }
+    
+    public boolean equals(KDNode rhs){
+    	return this.k.equals(rhs.k);
     }
     
     //Prints the coordinates
@@ -50,10 +60,15 @@ public class KDNode {
     //
 
     // Method ins translated from 352.ins.c of Gonnet & Baeza-Yates
-    protected static KDNode ins(HPoint key, Object val, KDNode t, int lev, int K)  {
+    protected static KDNode ins(HPoint key, Object val, KDNode t, int lev, int K, KDTree owner)  {
 
         if (t == null) {
             t = new KDNode(key, val);
+            if(owner.end != null){
+            	owner.end.next = t;
+            	t.previous = owner.end;
+            }
+            owner.end = t;
         }
 
         else if (key.equals(t.k)) {
@@ -74,10 +89,10 @@ public class KDNode {
 
         else if (key.coord[lev] > t.k.coord[lev]) {
         	t.balance--;
-            t.right = ins(key, val, t.right, (lev + 1) % K, K);
+            t.right = ins(key, val, t.right, (lev + 1) % K, K, owner);
         } else {
         	t.balance++;
-            t.left = ins(key, val, t.left, (lev + 1) % K, K);
+            t.left = ins(key, val, t.left, (lev + 1) % K, K, owner);
         }
 
         return t;
@@ -249,9 +264,20 @@ public class KDNode {
         v = val;
         left = null;
         right = null;
+        next = null;
+        previous = null;
         deleted = false;
     }
+    
+    //dummy constructor for searching and comparison
+    public KDNode(HPoint key){
+    	k = key;
+    }
 
+    public String toString(){
+    	return k.toString();
+    }
+    
     protected String toString(int depth) {
         String s = k + "  " + v + (deleted ? "*" : "");
         if (left != null) {

@@ -1,5 +1,6 @@
 package ut.mpc.kdt;
 import java.util.ArrayList;
+import java.util.List;
 
 import ut.mpc.balance.Transform;
 import ut.mpc.setup.Init;
@@ -57,7 +58,7 @@ public class KDTTree extends KDTree implements STStore {
 
 		Object[] objs = (Object[]) this.range(lowEff,uppEff);
 
-		ArrayList<Temporal> activePoints = new ArrayList<Temporal>();
+		List<Temporal> activePoints = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			activePoints.add( (Temporal) objs[i]);
 		}
@@ -77,7 +78,7 @@ public class KDTTree extends KDTree implements STStore {
 		//collect all possible values with max negative and positive as range bounds
 		Object[] objs = (Object[]) this.range(lowEff,uppEff);
 		
-		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		List<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
@@ -137,7 +138,7 @@ public class KDTTree extends KDTree implements STStore {
 		//collect all possible values with max negative and positive as range bounds
 		Object[] objs = (Object[]) this.range(lowEff,uppEff);
 		
-		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		List<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
@@ -161,7 +162,7 @@ public class KDTTree extends KDTree implements STStore {
 	public double windowQuery(double[] lowk, double[] uppk, boolean printWindow, int optLevel){
 		Object[] objs = (Object[]) this.range(lowk,uppk);
 
-		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		List<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
@@ -186,7 +187,7 @@ public class KDTTree extends KDTree implements STStore {
 		
 		Object[] objs = (Object[]) this.range(lowEff,uppEff);
 
-		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		List<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
@@ -198,7 +199,82 @@ public class KDTTree extends KDTree implements STStore {
 			return wc.calcWindow(printWindow);
 	}
 	
-	//Tester function to balance tree for benchmarking
+	public double coverageQuery(long startT, long endT, boolean printWindow, int optLevel){
+		List<Object> objs = this.getSequence(startT, endT, true);
+		
+		List<Temporal> points = new ArrayList<Temporal>();
+		for(int i = 0; i < objs.size(); ++i){
+			points.add( (Temporal) objs.get(i));
+		}
+		
+		double[] corners = new double[4];
+		double[] lowers = new double[2];
+		double[] uppers = new double[2];
+		corners = WindowCompute.getBoundingBox(points);
+		lowers[0] = corners[0];
+		lowers[1] = corners[2];
+		uppers[0] = corners[1];
+		uppers[1] = corners[3];
+		
+		WindowCompute wc = new WindowCompute(lowers,uppers,points);
+		if(optLevel == 1)
+			return wc.calcWindowOpt(printWindow);
+		else
+			return wc.calcWindow(printWindow);
+	}
+	
+	public List<Temporal> findPath(double[] startP, double[] endP, boolean chrono){
+		Temporal p1 = (Temporal)this.nearest(startP);
+		Temporal p2 = (Temporal)this.nearest(endP);
+		
+		List<Object> seq = this.getSequence(p1.getCoords(), p2.getCoords(), chrono);
+		List<Temporal> path = new ArrayList<Temporal>();
+		for(int i = 0; i < seq.size(); ++i){
+			path.add((Temporal) seq.get(i));
+		}
+		return path;
+	}
+	
+	public List<Temporal> findPath(long startT, long endT, boolean chrono){		
+		List<Object> seq = this.getSequence(startT, endT, chrono);
+		List<Temporal> path = new ArrayList<Temporal>();
+		for(int i = 0; i < seq.size(); ++i){
+			path.add((Temporal) seq.get(i));
+		}
+		return path;
+	}
+	
+	public double CoverageOnPath(double[] startP, double[] endP, boolean chrono, boolean includeAdj){
+		List<Temporal> path = findPath(startP,endP,chrono);
+		
+		double[] corners = new double[4];
+		double[] lowers = new double[2];
+		double[] uppers = new double[2];
+		corners = WindowCompute.getBoundingBox(path);
+		lowers[0] = corners[0];
+		lowers[1] = corners[2];
+		uppers[0] = corners[1];
+		uppers[1] = corners[3];
+		
+		WindowCompute wc;
+		if(includeAdj){ //Note, this does not include all points that could affect the bound
+			Object[] objs = (Object[]) this.range(lowers,uppers);
+			List<Temporal> points = new ArrayList<Temporal>();
+			for(int i = 0; i < objs.length; ++i){
+				points.add( (Temporal) objs[i]);
+			}		
+			wc = new WindowCompute(lowers,uppers,points);
+		} else {
+			wc = new WindowCompute(lowers,uppers,path);
+		}
+		if(Init.CoverageWindow.OPT_LEVEL == 1)
+			return wc.calcWindowOpt(Init.CoverageWindow.PLOT);
+		else
+			return wc.calcWindow(Init.CoverageWindow.PLOT);
+	}
+	
+	//To-Do make sure that this does not upset the temporal linked list within the tree
+	//especially begin.
 	public KDTTree balanceTree(){
 		double[] lowEff = new double[2];
 		double[] uppEff = new double[2];
@@ -208,7 +284,7 @@ public class KDTTree extends KDTree implements STStore {
 		uppEff[1] = Double.MAX_VALUE;
 		Object[] objs = (Object[]) this.range(lowEff,uppEff);
 
-		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		List<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
@@ -216,7 +292,9 @@ public class KDTTree extends KDTree implements STStore {
 		return Transform.makeBalancedKDTTree(points);
 	}
 	
-	public ArrayList<Temporal> getTrajectory(){
+	//To-Do remove before actual release
+	//Keep in code for testing if want to compare against this naive approach
+	public List<Temporal> getTrajectory(){
 		double[] lowEff = new double[2];
 		double[] uppEff = new double[2];
 		lowEff[0] = -Double.MAX_VALUE;
@@ -224,13 +302,19 @@ public class KDTTree extends KDTree implements STStore {
 		uppEff[0] = Double.MAX_VALUE;
 		uppEff[1] = Double.MAX_VALUE;
 		Object[] objs = (Object[]) this.range(lowEff,uppEff);
-		ArrayList<Temporal> points = new ArrayList<Temporal>();
+		List<Temporal> points = new ArrayList<Temporal>();
 		for(int i = 0; i < objs.length; ++i){
 			points.add( (Temporal) objs[i]);
 		}
 		Quicksort qs = new Quicksort();
 		qs.sortT(points, 0, points.size() - 1);
 		return points;
+	}
+	
+	//depends on Initiliazation.Current_Timestamp
+	//in a deployed application, this might sample the current time
+	public List<Temporal> getTrajectory(boolean chrono){
+		return this.findPath(0,Init.CURRENT_TIMESTAMP,true);
 	}
 	
 	public void print(){
