@@ -260,6 +260,15 @@ public class KDTTree extends KDTree implements STStore {
 		if(includeAdj){ //Note, this does not include all points that could affect the bound
 			Object[] objs = (Object[]) this.range(lowers,uppers);
 			List<Temporal> points = new ArrayList<Temporal>();
+			/*
+			if(chrono){
+				Init.CURRENT_TIMESTAMP = ((Temporal)objs[objs.length]).getTimeStamp();
+				Init.REFERENCE_TIMESTAMP = ((Temporal)objs[0]).getTimeStamp();
+			} else {
+				Init.REFERENCE_TIMESTAMP = ((Temporal)objs[objs.length]).getTimeStamp();
+				Init.CURRENT_TIMESTAMP = ((Temporal)objs[0]).getTimeStamp();
+			}
+			*/
 			for(int i = 0; i < objs.length; ++i){
 				points.add( (Temporal) objs[i]);
 			}		
@@ -273,8 +282,7 @@ public class KDTTree extends KDTree implements STStore {
 			return wc.calcWindow(Init.CoverageWindow.PLOT);
 	}
 	
-	//To-Do make sure that this does not upset the temporal linked list within the tree
-	//especially begin.
+	//Currently does not maintain balance of tree, this can be fixed fairly simply
 	public KDTTree balanceTree(){
 		double[] lowEff = new double[2];
 		double[] uppEff = new double[2];
@@ -292,8 +300,7 @@ public class KDTTree extends KDTree implements STStore {
 		return Transform.makeBalancedKDTTree(points);
 	}
 	
-	//To-Do remove before actual release
-	//Keep in code for testing if want to compare against this naive approach
+	//Keep for testing if want to compare against this naive approach
 	public List<Temporal> getTrajectory(){
 		double[] lowEff = new double[2];
 		double[] uppEff = new double[2];

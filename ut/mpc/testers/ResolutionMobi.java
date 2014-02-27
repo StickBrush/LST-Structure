@@ -34,11 +34,6 @@ public class ResolutionMobi {
 			e.printStackTrace();
 		}
 		
-		ArrayList<Temporal> temps = kdActual.getTrajectory();
-		for(int i = 0; i < temps.size(); ++i){
-			System.out.println(temps.get(i).getTimeStamp());
-		}
-		kdActual.print();
 		Helpers.prove("trees match in size",kdActual.getSize() == kdEst.getSize());
 		getStable();
 		Init.DEBUG_LEVEL3 = true;
@@ -56,8 +51,8 @@ public class ResolutionMobi {
 	}
 	
 	public static void getStable(){
-		long time1 = 0;
-		long time2 = 0;
+		double time1 = 0;
+		double time2 = 0;
 		do {
 			Init.DEBUG_LEVEL3 = false;
 			Helpers.startTimer();
@@ -66,7 +61,7 @@ public class ResolutionMobi {
 			Helpers.startTimer();
 			kdActual.windowQuery(false,1);
 			time2 = Helpers.endTimer(false);
-		} while(!Helpers.withinOnePercent(time1,time2));
+		} while(!Helpers.withinThreePercent(time1,time2));
 	}
 	
 }

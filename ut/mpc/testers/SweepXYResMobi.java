@@ -5,22 +5,16 @@ import ut.mpc.kdt.KDTTree;
 import ut.mpc.kdt.STStore;
 import ut.mpc.setup.Init;
 
-public class FullWindowMobi {
+public class SweepXYResMobi {
 	public static KDTTree kdtree;
-	public static ArrayTree arrtree;
 	public static long timer;
 	
 	public static void main(String[] args){
 		Init.setMobilityDefaults();
 		kdtree = new KDTTree(2,false);
-		arrtree = new ArrayTree(false);
-		
-		STStore[] trees = new STStore[]{kdtree,arrtree};
 
-		//KAIST019.txt - spread
-		//KAIST013.txt - medium
-		//KAIST045.txt - compact - few points ~300?
-		//KAIST055.txt - compact - many points 1482
+		STStore[] trees = new STStore[]{kdtree};
+
 		try {
 	        long start = System.currentTimeMillis();
 			MobilityWrapper.fillPointsFromFile(trees,args); //added comment to tester
@@ -29,20 +23,38 @@ public class FullWindowMobi {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		Helpers.prove("trees match in size",kdtree.getSize() == arrtree.getSize());
+
 		getStable();
+		Init.DEBUG_LEVEL3 = true;
 		System.out.println("Set Name >> " + args[0]);
 		System.out.println("Size is: " + kdtree.getSize());
-        System.out.println("[KDTree]");
+        System.out.println("[KDTree] Trim Accurate - Grid=1");
+        Init.X_GRID_GRAN = 1;
+        Init.Y_GRID_GRAN = 1;
+        kdtree.windowQuery(false, 1);
+        Helpers.endTimer(true);
+        
+        System.out.println("[KDTree] Trim Standard - Grid=5");
+        Init.X_GRID_GRAN = 5;
+        Init.Y_GRID_GRAN = 5;
         Helpers.startTimer();
         kdtree.windowQuery(false, 1);
         Helpers.endTimer(true);
         
-        System.out.println("[ArrayTree]");
+        System.out.println("[KDTree] Trim Opt - Grid=25");
+        Init.X_GRID_GRAN = 25;
+        Init.Y_GRID_GRAN = 25;
         Helpers.startTimer();
-        arrtree.windowQuery(false, 1);
+        kdtree.windowQuery(false, 1);
         Helpers.endTimer(true);
+        
+        System.out.println("[KDTree] Trim Speed - Grid=50");
+        Init.X_GRID_GRAN = 50;
+        Init.Y_GRID_GRAN = 50;
+        Helpers.startTimer();
+        kdtree.windowQuery(false, 1);
+        Helpers.endTimer(true);
+        System.out.println("-----------------------");
 	}
 	
 	public static void getStable(){

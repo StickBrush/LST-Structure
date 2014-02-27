@@ -19,11 +19,10 @@ public class ActualEstMobi {
 	public static long timer;
 	
 	public static void main(String[] args){
-		args = new String[]{"KAIST001.txt"};
 		Init.setMobilityDefaults();
 		kdActual = new KDTTree(2,false);
 		kdEst = new KDTTree(2,false);
-		
+
 		STStore[] trees = new STStore[]{kdActual,kdEst};
 		
 		try {
@@ -33,17 +32,6 @@ public class ActualEstMobi {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println("\n");
-	
-		List<Temporal> temps = kdActual.findPath(119, 120, true);
-		
-		System.out.println("returned sequence");
-		for(int i = 0; i < temps.size(); ++i){
-			System.out.println(temps.get(i));
-		}
-		
-		System.out.println("[ >>>>> ] " + kdActual.getBalance() / (kdActual.getSize() - 1));
 		
 		Helpers.prove("trees match in size",kdActual.getSize() == kdEst.getSize());
 		getStable();
@@ -59,21 +47,22 @@ public class ActualEstMobi {
         Helpers.startTimer();
         kdEst.windowQuery(false, 1);
         Helpers.endTimer(true);
+        System.out.println("----------------------");
         
 	}
 	
 	public static void getStable(){
-		long time1 = 0;
-		long time2 = 0;
+		double time1 = 0;
+		double time2 = 0;
 		do {
 			Init.DEBUG_LEVEL3 = false;
 			Helpers.startTimer();
 			kdEst.windowQuery(false,1);
 			time1 = Helpers.endTimer(false);
 			Helpers.startTimer();
-			kdActual.windowQuery(false,1);
+			kdEst.windowQuery(false,1);
 			time2 = Helpers.endTimer(false);
-		} while(!Helpers.withinOnePercent(time1,time2));
+		} while(!Helpers.withinThreePercent(time1,time2));
 	}
 	
 }

@@ -55,8 +55,8 @@ public class FullWindowCabs {
 	}
 	
 	public static void getStable(){
-		long time1 = 0;
-		long time2 = 0;
+		double time1 = 0;
+		double time2 = 0;
 		do {
 			Helpers.startTimer();
 			kdtree.windowQuery(false,1);
@@ -64,7 +64,7 @@ public class FullWindowCabs {
 			Helpers.startTimer();
 			kdtree.windowQuery(false,1);
 			time2 = Helpers.endTimer(false);
-		} while(!Helpers.withinOnePercent(time1,time2));
+		} while(!Helpers.withinThreePercent(time1,time2));
 	}
 	
 }

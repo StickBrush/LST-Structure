@@ -42,8 +42,8 @@ public class GPSLib {
 		
 		if(Init.COORD_TYPE == Init.CoordType.GPS){
 			//Possible idea - get accurate distance for first point, find what distance is and use that fixed value
-			double paddingY = .009;
-			double paddingX = .011;
+			double paddingY = .009 * Init.SPACE_RADIUS;
+			double paddingX = .011 * Init.SPACE_RADIUS;
 			spaceBound[0] = lowk[0] - paddingX;
 			spaceBound[1] = uppk[0] + paddingX;
 			spaceBound[2] = lowk[1] - paddingY;

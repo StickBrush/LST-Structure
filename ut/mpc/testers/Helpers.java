@@ -1,15 +1,15 @@
 package ut.mpc.testers;
 
 public class Helpers {
-	private static long timer;
+	private static double timer;
 	
 	public static void startTimer(){
 		timer = System.nanoTime();    
 	}
 	
 	//prints output to screen
-	public static long endTimer(boolean print){
-		long estimatedTime = System.nanoTime() - timer;
+	public static double endTimer(boolean print){
+		double estimatedTime = System.nanoTime() - timer;
 		if(print)
 			System.out.println(">>>> execution time: " + estimatedTime / 1000000);
 		return estimatedTime;
@@ -24,11 +24,11 @@ public class Helpers {
 			System.out.println("Prove >> " + label + " FAILED");
 	}
 	
-	public static boolean withinOnePercent(long val1, long val2){
+	public static boolean withinThreePercent(double val1, double val2){
 		if(val1 > val2){
-			return (1 - (val2 / val1) > .1);
+			return ((1 - (val2 / val1)) < .03);
 		} else {
-			return (1 - (val1 / val2) > .1);
+			return ((1 - (val1 / val2)) < .03);
 		}
 	}
 }

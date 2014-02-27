@@ -33,7 +33,26 @@ public class Init {
 	public static boolean DEBUG_LEVEL2 = true;
 	public static boolean DEBUG_LEVEL3 = false;
 	
+	
+	//
+	public static class SmartInsert{
+		public static int INS_THRESH = 80;
+		
+	}
+	
+	//
 	public static class CoverageWindow{
+		public static double SPACE_WEIGHT = 100; //useful for scaling the magnitude of the computation numbers (good to stay within reasonable bounds to avoid rounding/overflow)
+		public static double SPACE_RADIUS = 1;
+		
+		//SPACE_TRIM is almost made obsolete by trimNearby.  SPACE_TRIM is not based on percentage of current nearby points and is more of
+		//a naive point limiting mechanism.  However, Using space trim may limit the number of entries that trimNearby must sort before it does its limitations.
+		public static double SPACE_TRIM = .3 * SPACE_WEIGHT; //default to 0 for safest estimate, increase for less accurate but faster estimations
+		public static int TRIM_THRESH = 10;
+		
+		public static boolean GRID_DEFAULT = false;
+		public static double X_GRID_GRAN = (GRID_DEFAULT) ? SPACE_RADIUS / 10 : .001; //allow fine tuning by setting grid default to off
+		public static double Y_GRID_GRAN = (GRID_DEFAULT) ? SPACE_RADIUS / 10 : .001; //allow fine tuning by setting grid default to off
 		public static int OPT_LEVEL = 1;
 		public static boolean PLOT = false;
 	}

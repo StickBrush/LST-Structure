@@ -5,44 +5,56 @@ import ut.mpc.kdt.KDTTree;
 import ut.mpc.kdt.STStore;
 import ut.mpc.setup.Init;
 
-public class FullWindowMobi {
+public class SweepXYResCabs {
 	public static KDTTree kdtree;
-	public static ArrayTree arrtree;
 	public static long timer;
 	
 	public static void main(String[] args){
-		Init.setMobilityDefaults();
+		Init.setCabsDefaults();
 		kdtree = new KDTTree(2,false);
-		arrtree = new ArrayTree(false);
 		
-		STStore[] trees = new STStore[]{kdtree,arrtree};
+		STStore[] trees = new STStore[]{kdtree};
 
-		//KAIST019.txt - spread
-		//KAIST013.txt - medium
-		//KAIST045.txt - compact - few points ~300?
-		//KAIST055.txt - compact - many points 1482
 		try {
 	        long start = System.currentTimeMillis();
-			MobilityWrapper.fillPointsFromFile(trees,args); //added comment to tester
+			CabSpottingWrapper.fillPointsFromFile(trees,args); //added comment to tester
 	        System.out.println("Time: " + (System.currentTimeMillis() - start));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		Helpers.prove("trees match in size",kdtree.getSize() == arrtree.getSize());
+
 		getStable();
+		Init.DEBUG_LEVEL3 = true;
 		System.out.println("Set Name >> " + args[0]);
 		System.out.println("Size is: " + kdtree.getSize());
-        System.out.println("[KDTree]");
+        System.out.println("[KDTree] Trim Accurate - Grid=.0005");
+        Init.X_GRID_GRAN = .0005;
+        Init.Y_GRID_GRAN = .0005;
+        kdtree.windowQuery(false, 1);
+        Helpers.endTimer(true);
+        
+        System.out.println("[KDTree] Trim Standard - Grid=.001");
+        Init.X_GRID_GRAN = .001;
+        Init.Y_GRID_GRAN = .001;
         Helpers.startTimer();
         kdtree.windowQuery(false, 1);
         Helpers.endTimer(true);
         
-        System.out.println("[ArrayTree]");
+        System.out.println("[KDTree] Trim Opt - Grid=.005");
+        Init.X_GRID_GRAN = .005;
+        Init.Y_GRID_GRAN = .005;
         Helpers.startTimer();
-        arrtree.windowQuery(false, 1);
+        kdtree.windowQuery(false, 1);
         Helpers.endTimer(true);
+        
+        System.out.println("[KDTree] Trim Speed - Grid=.01");
+        Init.X_GRID_GRAN = .01;
+        Init.Y_GRID_GRAN = .01;
+        Helpers.startTimer();
+        kdtree.windowQuery(false, 1);
+        Helpers.endTimer(true);
+        System.out.println("-----------------------");
 	}
 	
 	public static void getStable(){
