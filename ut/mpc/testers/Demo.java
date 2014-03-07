@@ -9,17 +9,18 @@ import ut.mpc.kdt.STStore;
 import ut.mpc.setup.Init;
 import KDTree.*;
 
-public class ActualEstCabs {
+public class Demo {
 	public static KDTTree kdActual;
-	public static KDTTree kdEst;
+	public static ArrayTree arr;
 	public static long timer;
 	
 	public static void main(String[] args){
 		Init.setCabsDefaults();
-		kdActual = new KDTTree(2,false);
-		kdEst = new KDTTree(2,false);
+		kdActual = new KDTTree(2,true);
+		arr = new ArrayTree(true);
 		
-		STStore[] trees = new STStore[]{kdActual,kdEst};
+		args = new String[]{"new_ucvepnuv.txt"};
+		STStore[] trees = new STStore[]{kdActual,arr};
 		
 		try {
 	        long start = System.currentTimeMillis();
@@ -29,19 +30,21 @@ public class ActualEstCabs {
 			e.printStackTrace();
 		}
 		
-		Helpers.prove("trees match in size",kdActual.getSize() == kdEst.getSize());
+		Helpers.prove("trees match in size",kdActual.getSize() == arr.getSize());
+		Init.X_GRID_GRAN = .01;
+		Init.Y_GRID_GRAN = .01;
 		getStable();
 		Init.DEBUG_LEVEL3 = true;
 		System.out.println("Set Name >> " + args[0]);
 		System.out.println("Size is: " + kdActual.getSize());
         System.out.println("[KDTree - Actual]");
         Helpers.startTimer();
-        kdActual.windowQuery(false, 0);
+        kdActual.windowQuery(false, 1);
         Helpers.endTimer(true);
         
-        System.out.println("[KDTree - Estimated]");
+        System.out.println("[KDTree - Array]");
         Helpers.startTimer();
-        kdEst.windowQuery(false, 1);
+        arr.windowQuery(false, 1);
         Helpers.endTimer(true);
         System.out.println("----------------------");
 	}
@@ -52,10 +55,10 @@ public class ActualEstCabs {
 		do {
 			Init.DEBUG_LEVEL3 = false;
 			Helpers.startTimer();
-			kdEst.windowQuery(false,1);
+			arr.windowQuery(false,1);
 			time1 = Helpers.endTimer(false);
 			Helpers.startTimer();
-			kdEst.windowQuery(false,1);
+			arr.windowQuery(false,1);
 			time2 = Helpers.endTimer(false);
 		} while(!Helpers.withinThreePercent(time1,time2));
 	}

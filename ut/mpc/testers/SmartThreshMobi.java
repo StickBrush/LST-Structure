@@ -23,9 +23,11 @@ public class SmartThreshMobi {
 	public static void main(String[] args){
 		Init.setMobilityDefaults();
 		
+		args = new String[]{"50", "KAIST002.txt"};
 		Init.INS_THRESH = Integer.valueOf(args[0]);
 		kdtree = new KDTTree(2,false);
 		kdtreeSmart = new KDTTree(2,true);
+
 		
 		STStore[] trees = new STStore[]{kdtree,kdtreeSmart};
 		

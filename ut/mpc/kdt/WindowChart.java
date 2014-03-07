@@ -109,6 +109,7 @@ public class WindowChart {
 	    	green = 255 - red;
     	}
     	Color color = new Color(Display.getDefault(), red, green, 0);
+    	//Color color = new Color(Display.getDefault(), green, green, green); //red, green, 0
     	return color;
     }
 

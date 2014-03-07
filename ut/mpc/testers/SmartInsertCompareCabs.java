@@ -10,11 +10,11 @@ import ut.mpc.kdt.Temporal;
 import ut.mpc.setup.Init;
 
 
-//Note* Takes two parameters
-//args[0] is data input file
-//args[1] is iterations of inserting same data set
+//Note* Takes paramater list of files to insert together
+//args[0] is data input file list
 public class SmartInsertCompareCabs {
 	public static KDTTree kdtree;
+	public static KDTTree kdtree2;
 	public static ArrayTree arrtree;
 	public static KDTTree fulltree;
 	public static ArrayTree warmuptree;
@@ -25,11 +25,12 @@ public class SmartInsertCompareCabs {
 		Init.setCabsDefaults();
 		kdtree = new KDTTree(2,true);
 		arrtree = new ArrayTree(true);
+		kdtree2 = new KDTTree(2,false);
 		fulltree = new KDTTree(2,false);
 		warmuptree = new ArrayTree(true);
 		warmuptree2 = new KDTTree(2,true);
 		
-		args = new String[]{"new_utlurva.txt", "new_abboip.txt", "new_urfhod.txt", "new_unquekov.txt"};
+		args = new String[]{"new_utlurva.txt"};
 
 		getStable(args); //simply runs the benchmark once as a dry run to warm up the JIT
 		Init.DEBUG_LEVEL1 = false;
@@ -56,7 +57,7 @@ public class SmartInsertCompareCabs {
 	        	String[] input = new String[]{args[i]};
 	        	fillPointsFromFile(trees,input); //added comment to tester
 	        }
-	        System.out.println("ArrTree Insertion Time: " + (System.currentTimeMillis() - start));
+	        System.out.println("KDTree w/0 SI Insertion Time: " + (System.currentTimeMillis() - start));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

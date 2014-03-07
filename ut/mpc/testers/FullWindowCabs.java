@@ -2,7 +2,6 @@ package ut.mpc.testers;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.lang.management.ClassLoadingMXBean;
 
 import ut.mpc.kdt.ArrayTree;
 import ut.mpc.kdt.KDTTree;

@@ -223,6 +223,9 @@ public class KDTTree extends KDTree implements STStore {
 			return wc.calcWindow(printWindow);
 	}
 	
+	//this method can be made more efficient by the nearest method returning an actual node
+	//the get sequence won't have to naively start at the beginning (or end) to find the sequence,
+	//but rather, simply get the sequence between the two nodes
 	public List<Temporal> findPath(double[] startP, double[] endP, boolean chrono){
 		Temporal p1 = (Temporal)this.nearest(startP);
 		Temporal p2 = (Temporal)this.nearest(endP);

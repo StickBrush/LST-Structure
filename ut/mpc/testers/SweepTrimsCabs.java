@@ -28,6 +28,16 @@ public class SweepTrimsCabs {
 		Init.DEBUG_LEVEL3 = true;
 		System.out.println("Set Name >> " + args[0]);
 		System.out.println("Size is: " + kdtree.getSize());
+        System.out.println("[KDTree] Trim Accurate - Space=.05 Trim=20");
+        Init.SPACE_TRIM = .1;
+        Init.TRIM_THRESH = 18;
+        Helpers.startTimer();
+        kdtree.windowQuery(false, 1);
+        Helpers.endTimer(true);
+		
+		Init.DEBUG_LEVEL3 = true;
+		System.out.println("Set Name >> " + args[0]);
+		System.out.println("Size is: " + kdtree.getSize());
         System.out.println("[KDTree] Trim Safe - Space=.1 Trim=15");
         Init.SPACE_TRIM = .1;
         Init.TRIM_THRESH = 15;
