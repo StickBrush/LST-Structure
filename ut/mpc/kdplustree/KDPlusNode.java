@@ -4,22 +4,22 @@
  * based on work by Simon Levy
  * http://www.cs.wlu.edu/~levy/software/kd/
  */
-package KDTree;
+package ut.mpc.kdplustree;
 
 import java.util.Vector;
 
 // K-D Tree node class
 
-public class KDNode {
+public class KDPlusNode {
 
     // these are seen by KDTree
     protected HPoint k;
 
     Object v;
 
-    protected KDNode left, right;
+    protected KDPlusNode left, right;
     
-    protected KDNode next, previous  ;
+    protected KDPlusNode next, previous  ;
     
     protected boolean deleted;
     
@@ -29,11 +29,11 @@ public class KDNode {
     // 
     protected int balance = 0;
 
-    public KDNode getLeftNode(){
+    public KDPlusNode getLeftNode(){
     	return left;
     }
     
-    public KDNode getRightNode(){
+    public KDPlusNode getRightNode(){
     	return right;
     }
     
@@ -41,7 +41,7 @@ public class KDNode {
     	return v;
     }
     
-    public boolean equals(KDNode rhs){
+    public boolean equals(KDPlusNode rhs){
     	return this.k.equals(rhs.k);
     }
     
@@ -60,10 +60,10 @@ public class KDNode {
     //
 
     // Method ins translated from 352.ins.c of Gonnet & Baeza-Yates
-    protected static KDNode ins(HPoint key, Object val, KDNode t, int lev, int K, KDTree owner)  {
+    protected static KDPlusNode ins(HPoint key, Object val, KDPlusNode t, int lev, int K, KDPlusTree owner)  {
 
         if (t == null) {
-            t = new KDNode(key, val);
+            t = new KDPlusNode(key, val);
             if(owner.end != null){
             	owner.end.next = t;
             	t.previous = owner.end;
@@ -99,7 +99,7 @@ public class KDNode {
     }
 
     // Method srch translated from 352.srch.c of Gonnet & Baeza-Yates
-    protected static KDNode srch(HPoint key, KDNode t, int K) {
+    protected static KDPlusNode srch(HPoint key, KDPlusNode t, int K) {
 
         for (int lev = 0; t != null; lev = (lev + 1) % K) {
 
@@ -116,7 +116,7 @@ public class KDNode {
     }
 
     // Method rsearch translated from 352.range.c of Gonnet & Baeza-Yates
-    protected static void rsearch(HPoint lowk, HPoint uppk, KDNode t, int lev, int K, Vector<KDNode> v) {
+    protected static void rsearch(HPoint lowk, HPoint uppk, KDPlusNode t, int lev, int K, Vector<KDPlusNode> v) {
         if (t == null)
             return;
         if (lowk.coord[lev] <= t.k.coord[lev]) {
@@ -136,7 +136,7 @@ public class KDNode {
     // comments are direct quotes from there. Step "SDL" is added to
     // make the algorithm work correctly. NearestNeighborList solution
     // courtesy of Bjoern Heckel.
-    protected static void nnbr(KDNode kd, HPoint target, HRect hr, double max_dist_sqd, int lev, int K,
+    protected static void nnbr(KDPlusNode kd, HPoint target, HRect hr, double max_dist_sqd, int lev, int K,
             NearestNeighborList nnl) {
 
         // 1. if kd is empty then set dist-sqd to infinity and exit.
@@ -162,9 +162,9 @@ public class KDNode {
         // 5. target-in-left := target_s <= pivot_s
         boolean target_in_left = target.coord[s] < pivot.coord[s];
 
-        KDNode nearer_kd;
+        KDPlusNode nearer_kd;
         HRect nearer_hr;
-        KDNode further_kd;
+        KDPlusNode further_kd;
         HRect further_hr;
 
         // 6. if target-in-left then
@@ -192,7 +192,7 @@ public class KDNode {
         // results in nearest and dist-sqd
         nnbr(nearer_kd, target, nearer_hr, max_dist_sqd, lev + 1, K, nnl);
 
-        KDNode nearest = (KDNode) nnl.getHighest();
+        KDPlusNode nearest = (KDPlusNode) nnl.getHighest();
         double dist_sqd;
 
         if (!nnl.isCapacityReached()) {
@@ -237,7 +237,7 @@ public class KDNode {
             // (further-kd, target, further-hr, max-dist_sqd),
             // storing results in temp-nearest and temp-dist-sqd
             nnbr(further_kd, target, further_hr, max_dist_sqd, lev + 1, K, nnl);
-            KDNode temp_nearest = (KDNode) nnl.getHighest();
+            KDPlusNode temp_nearest = (KDPlusNode) nnl.getHighest();
             double temp_dist_sqd = nnl.getMaxPriority();
 
             // 10.3 If tmp-dist-sqd < dist-sqd then
@@ -257,7 +257,7 @@ public class KDNode {
     }
 
     // constructor is used only by class; other methods are static
-    private KDNode(HPoint key, Object val) {
+    private KDPlusNode(HPoint key, Object val) {
 
     	balance = 0;
         k = key;
@@ -270,7 +270,7 @@ public class KDNode {
     }
     
     //dummy constructor for searching and comparison
-    public KDNode(HPoint key){
+    public KDPlusNode(HPoint key){
     	k = key;
     }
 

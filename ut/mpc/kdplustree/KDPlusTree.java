@@ -4,7 +4,7 @@
  * based on work by Simon Levy
  * http://www.cs.wlu.edu/~levy/software/kd/
  */
-package KDTree;
+package ut.mpc.kdplustree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,18 +32,18 @@ import ut.mpc.kdt.Temporal;
  * @version %I%, %G%
  * @since JDK1.2
  */
-public class KDTree {
+public class KDPlusTree {
 
 	// K = number of dimensions
 	private int m_K;
 
 	//Changed to protected for extension
 	// root of KD-tree
-	protected KDNode m_root;
+	protected KDPlusNode m_root;
 
-	protected KDNode begin;
+	protected KDPlusNode begin;
 	
-	protected KDNode end;
+	protected KDPlusNode end;
 	
 	// count of nodes
 	protected int m_count;
@@ -54,7 +54,7 @@ public class KDTree {
 	 * @param k
 	 *            number of dimensions
 	 */
-	public KDTree(int k) {
+	public KDPlusTree(int k) {
 
 		m_K = k;
 		m_root = null;
@@ -66,14 +66,14 @@ public class KDTree {
 	//p1 may occur before p2 or vice versa, the order is determined by the direction the tree is walked
 	//if doesn't find p1 and p2 in sequence, then returns empty list
 	public List<Object> getSequence(double[] p1, double[] p2, boolean chrono){
-		KDNode point1 = new KDNode(new HPoint(p1));
-		KDNode point2 = new KDNode(new HPoint(p2));
+		KDPlusNode point1 = new KDPlusNode(new HPoint(p1));
+		KDPlusNode point2 = new KDPlusNode(new HPoint(p2));
 		
 		List<Object> seq = new ArrayList<Object>(); 
 
 		boolean insert = false;
 		if(chrono){ //chronological
-			KDNode next = begin;
+			KDPlusNode next = begin;
 			while(next != null){
 				if(next.equals(point1) || next.equals(point2)){
 					insert = !insert;
@@ -86,7 +86,7 @@ public class KDTree {
 				next = next.next;
 			}
 		} else { //reverse chronological
-			KDNode next = end;
+			KDPlusNode next = end;
 			while(next != null){
 				if(next.equals(point1) || next.equals(point2)){
 					insert = !insert;
@@ -114,7 +114,7 @@ public class KDTree {
 		if(t2 < t1) return seq;
 
 		if(chrono){ //chronological
-			KDNode next = begin;
+			KDPlusNode next = begin;
 			while(next != null){
 				long nextT = ((Temporal)next.v).getTimeStamp();
 				if (nextT >= t1 && nextT <= t2){
@@ -125,7 +125,7 @@ public class KDTree {
 				next = next.next;
 			}
 		} else { //reverse chronological
-			KDNode next = end;
+			KDPlusNode next = end;
 			while(next != null){
 				long nextT = ((Temporal)next.v).getTimeStamp();
 				if (nextT >= t1 && nextT <= t2){
@@ -166,10 +166,10 @@ public class KDTree {
 		} else {
 			//added check to see if node was already in tree before incrementing count and inserting
 			//this maintains correct balances in the nodes as well
-			KDNode search = KDNode.srch(new HPoint(key), m_root, m_K);
+			KDPlusNode search = KDPlusNode.srch(new HPoint(key), m_root, m_K);
 			if(search == null){
 				m_count++;
-				m_root = KDNode.ins(new HPoint(key), value, m_root, 0, m_K, this);
+				m_root = KDPlusNode.ins(new HPoint(key), value, m_root, 0, m_K, this);
 				if(m_count == 1){
 					begin = m_root;
 				}
@@ -197,7 +197,7 @@ public class KDTree {
 			throw new RuntimeException("KDTree: wrong key size!");
 		}
 
-		KDNode kd = KDNode.srch(new HPoint(key), m_root, m_K);
+		KDPlusNode kd = KDPlusNode.srch(new HPoint(key), m_root, m_K);
 
 		return (kd == null ? null : kd.v);
 	}
@@ -223,7 +223,7 @@ public class KDTree {
 
 		else {
 
-			KDNode t = KDNode.srch(new HPoint(key), m_root, m_K);
+			KDPlusNode t = KDPlusNode.srch(new HPoint(key), m_root, m_K);
 			if (t == null) {
 				throw new RuntimeException("KDTree: key missing!");
 			} else {
@@ -300,10 +300,10 @@ public class KDTree {
 		double max_dist_sqd = Double.MAX_VALUE;
 		HPoint keyp = new HPoint(key);
 
-		KDNode.nnbr(m_root, keyp, hr, max_dist_sqd, 0, m_K, nnl);
+		KDPlusNode.nnbr(m_root, keyp, hr, max_dist_sqd, 0, m_K, nnl);
 
 		for (int i = 0; i < n; ++i) {
-			KDNode kd = (KDNode) nnl.removeHighest();
+			KDPlusNode kd = (KDPlusNode) nnl.removeHighest();
 			nbrs[n - i - 1] = kd.v;
 		}
 
@@ -335,11 +335,11 @@ public class KDTree {
 		}
 
 		else {
-			Vector<KDNode> v = new Vector<KDNode>();
-			KDNode.rsearch(new HPoint(lowk), new HPoint(uppk), m_root, 0, m_K, v);
+			Vector<KDPlusNode> v = new Vector<KDPlusNode>();
+			KDPlusNode.rsearch(new HPoint(lowk), new HPoint(uppk), m_root, 0, m_K, v);
 			Object[] o = new Object[v.size()];
 			for (int i = 0; i < v.size(); ++i) {
-				KDNode n = v.elementAt(i);
+				KDPlusNode n = v.elementAt(i);
 				o[i] = n.v;
 			}
 			return o;

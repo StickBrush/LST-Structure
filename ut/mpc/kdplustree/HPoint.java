@@ -4,7 +4,7 @@
  * based on work by Simon Levy
  * http://www.cs.wlu.edu/~levy/software/kd/
  */
-package KDTree;
+package ut.mpc.kdplustree;
 
 // Hyper-Point class supporting KDTree class
 
