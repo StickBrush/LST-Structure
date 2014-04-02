@@ -3,16 +3,16 @@ package ut.mpc.balance;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
-import KDTree.KDTree;
-import ut.mpc.kdt.KDTTree;
+import ut.mpc.kdplustree.KDPlusTree;
+import ut.mpc.kdt.LSTTree;
 import ut.mpc.kdt.Temporal;
 import ut.mpc.setup.Init;
 
 public class BalanceTester {
-	public static KDTTree kdtree;
+	public static LSTTree kdtree;
 	
 	public static void main(String[] args){
-		kdtree = new KDTTree(2);
+		kdtree = new LSTTree(2);
 			
 		
 		try {
@@ -34,7 +34,7 @@ public class BalanceTester {
 		line = br.readLine();
 		String[] split = new String[4];
 		split = line.split(" ");
-		Init.CURRENT_TIMESTAMP = Long.parseLong(split[3]);
+		Init.CoverageWindow.CURRENT_TIMESTAMP = Long.parseLong(split[3]);
 		temp = new Temporal(Long.parseLong(split[3]),Double.parseDouble(split[0]),Double.parseDouble(split[1]));
 		insertPoint(temp.getXCoord(),temp.getYCoord(),kdtree,temp);
 		
@@ -44,11 +44,11 @@ public class BalanceTester {
 		   temp = new Temporal(Long.parseLong(split[3]),Double.parseDouble(split[1]),Double.parseDouble(split[0]));
 		   insertPoint(temp.getXCoord(),temp.getYCoord(),kdtree,temp);
 		}
-		Init.REFERENCE_TIMESTAMP = Long.parseLong(split[3]);
+		Init.CoverageWindow.REFERENCE_TIMESTAMP = Long.parseLong(split[3]);
 		br.close();
 	}
 	
-	public static void insertPoint(double x, double y, KDTree kdtree, Temporal temp){
+	public static void insertPoint(double x, double y, KDPlusTree kdtree, Temporal temp){
 		double[] tempKey = new double[2];
 		tempKey[0] = x;
 		tempKey[1] = y;

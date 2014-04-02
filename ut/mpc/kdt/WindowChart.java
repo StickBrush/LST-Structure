@@ -18,7 +18,7 @@ import ut.mpc.setup.Init;
 //set normalize to true to normalize plot to highest value of data points
 public class WindowChart {
 	public String name;
-	public boolean normalize = Init.NORMALIZE_PLOT;
+	public boolean normalize = Init.CoverageWindow.NORMALIZE_PLOT;
 	public double maxVal = 0.0;
 	public ArrayList<double[]> points = new ArrayList<double[]>();
 	public ArrayList<double[]> values = new ArrayList<double[]>();

@@ -1,5 +1,8 @@
 package ut.mpc.kdt;
 
+/*
+ * Spatiotemporal Data Storage Interface
+ */
 public interface STStore {
 	public int getSize();
 	public void insert(Temporal point);

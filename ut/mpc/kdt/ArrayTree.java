@@ -51,7 +51,7 @@ public class ArrayTree implements STStore {
 		//Should we establish a lower bound based on temporal aspects?
 		
 		//Simple
-		if(pointProb <= Init.INS_THRESH)
+		if(pointProb <= Init.SmartInsert.INS_THRESH)
 			this.stdInsert(point);
 	}
 	
@@ -64,7 +64,7 @@ public class ArrayTree implements STStore {
 		lowEff[1] = spaceBound[2];
 		uppEff[1] = spaceBound[3];
 		List<Temporal> activePoints = this.range(lowEff,uppEff);
-		WindowCompute wc = new WindowCompute();
+		CoverageWindow wc = new CoverageWindow();
 		return wc.getPointsProb(point[0],point[1],activePoints);
 	}
 	
@@ -83,13 +83,13 @@ public class ArrayTree implements STStore {
 		double[] corners = new double[4];
 		double[] lowers = new double[2];
 		double[] uppers = new double[2];
-		corners = WindowCompute.getBoundingBox(foundPoints);
+		corners = CoverageWindow.getBoundingBox(foundPoints);
 		lowers[0] = corners[0];
 		lowers[1] = corners[2];
 		uppers[0] = corners[1];
 		uppers[1] = corners[3];
 		
-		WindowCompute wc = new WindowCompute(lowers,uppers,foundPoints);
+		CoverageWindow wc = new CoverageWindow(lowers,uppers,foundPoints);
 		if(optLevel == 1)
 			return wc.calcWindowOptArr(printWindow);
 		else
@@ -98,7 +98,7 @@ public class ArrayTree implements STStore {
 	
 	public double windowQuery(double[] lowk, double[] uppk, boolean printWindow, int optLevel){
 		List<Temporal> foundPoints = this.range(lowk,uppk);
-		WindowCompute wc = new WindowCompute(lowk,uppk,foundPoints);
+		CoverageWindow wc = new CoverageWindow(lowk,uppk,foundPoints);
 		if(optLevel == 1)
 			return wc.calcWindowOptArr(printWindow);
 		else
@@ -116,7 +116,7 @@ public class ArrayTree implements STStore {
 		
 		List<Temporal> foundPoints = this.range(lowEff,uppEff);
 
-		WindowCompute wc = new WindowCompute(lowk,uppk,foundPoints);
+		CoverageWindow wc = new CoverageWindow(lowk,uppk,foundPoints);
 		if(optLevel == 1)
 			return wc.calcWindowOptArr(printWindow);
 		else

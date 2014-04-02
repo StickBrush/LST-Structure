@@ -1,8 +1,5 @@
 package ut.mpc.kdt;
 
-import ut.mpc.phenom.LocationWrapper;
-import java.sql.Timestamp;
-
 public class Temporal {
 	private double x;
 	private double y;
