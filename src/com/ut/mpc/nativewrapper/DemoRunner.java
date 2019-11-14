@@ -28,19 +28,19 @@ public class DemoRunner {
 
         //Constants.setCabsDefaults();
         NativeWrapper main = new NativeWrapper(conn,"RTreeMain");
-//
-//        STStorage[] storages = new STStorage[]{main};
-//        String[] file = new String[]{"new_atsfiv.txt"};
-//        try {
-//            CabsWrapper.fillPointsFromFile(storages, file);
-//        } catch (Exception e){
-//            e.printStackTrace();
-//        }
-
+/*
+        STStorage[] storages = new STStorage[]{main};
+        String[] file = new String[]{"new_atsfiv.txt"};
+        try {
+            CabsWrapper.fillPointsFromFile(storages, file);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+*/
         LSTFilter filter = new LSTFilter(main);
-//        STRegion query = new STRegion(new STPoint(37.4f,-122.2f,0), new STPoint(37.8f,-122.6f,10000));
-//        double val = filter.windowPoK(query);
-//        System.out.println(val);
+        STRegion query = new STRegion(new STPoint(37.4f,-122.2f,0), new STPoint(37.8f,-122.6f,10000));
+        double val = filter.windowPoK(query);
+        System.out.println(val);
 
         List<STPoint> points = main.range(new STRegion(STPoint.minPoint(), STPoint.maxPoint()));
         System.out.println(points.size());
