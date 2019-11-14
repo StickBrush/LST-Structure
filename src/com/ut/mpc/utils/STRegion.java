@@ -1,5 +1,8 @@
 package com.ut.mpc.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Creates a range object commonly used for queries
  * The range can be conceptualized as 2 STPoints, one for minimums and
@@ -59,6 +62,16 @@ public class STRegion {
 	
 	public String toString(){
 		return this.mins.toString() + this.maxs.toString();
+	}
+
+	public static STRegion fromString(String region){
+		int splittingPoint = region.lastIndexOf("X:");
+		String minStr = region.substring(0, splittingPoint);
+		String maxStr = region.substring(splittingPoint);
+		STRegion res = new STRegion();
+		res.mins = STPoint.fromString(minStr);
+		res.maxs = STPoint.fromString(maxStr);
+		return res;
 	}
 
 }

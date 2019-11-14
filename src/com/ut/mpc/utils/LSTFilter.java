@@ -13,8 +13,13 @@ public class LSTFilter {
 	private STStorage structure;
 	private boolean smartInsert = true;
     private boolean kdCache = true;
+    private double smartInsertThresh = Constants.SmartInsert.INS_THRESH;
 
-    //point representing center/or reference of structure for use with gps dist calcs
+	public void setSmartInsertThresh(double smartInsertThresh) {
+		this.smartInsertThresh = smartInsertThresh;
+	}
+
+	//point representing center/or reference of structure for use with gps dist calcs
     //default to some point in California
     private STPoint refPoint = new STPoint(-122.4375f, 37.77305f, 0f);
 
@@ -319,7 +324,7 @@ public class LSTFilter {
 
 	private void smartInsert(STPoint point) {
 		double pok = this.pointPoK(point);
-		if(pok <= Constants.SmartInsert.INS_THRESH){
+		if(pok <= smartInsertThresh){
 			this.stdInsert(point);
 		}
 	}

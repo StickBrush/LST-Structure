@@ -1,7 +1,5 @@
 package com.ut.mpc.paco;
 
-import javax.management.Query;
-
 /**
  * Created by nathanielwendt on 10/13/16.
  */
@@ -10,7 +8,7 @@ public class QueryBudget {
     private int balance;
 
     public QueryBudget(int budget){
-        budget = budget;
+        this.budget = budget;
     }
 
     public void spend(int value){
